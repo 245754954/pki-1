@@ -1,0 +1,15 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/utils.html" as utils %}
+
+{% block title %}PKI{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>PKI</h1>
+        {{ utils.flashed_messages(dismissible=true) }}
+        {{ super() }}
+        <footer style="text-align: center;color: #aaaaaa">
+            &copy; 2020 PKI
+        </footer>
+    </div>
+{% endblock %}

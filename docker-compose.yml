@@ -1,0 +1,23 @@
+version: "2"
+services:
+
+  mongo:
+    image: "mongo:4.2"
+    restart: "always"
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - "mongo:/data"
+
+  mongo-express:
+    image: "mongo-express:0.54"
+    restart: "always"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: "mongo"
+    ports:
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+
+volumes:
+  mongo:

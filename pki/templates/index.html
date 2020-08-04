@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}证书列表{% endblock %}
+
+{% block content %}
+
+    <p>
+        <a href="{{ url_for(".create") }}" class="btn btn-primary">
+            创建证书
+        </a>
+    </p>
+
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            证书
+        </div>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>SHA1 指纹</th>
+                <th>创建时间</th>
+                <th>到期时间</th>
+                <th>模式</th>
+                <th>通用名称</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in certificates %}
+                <tr>
+                    <td>
+                        {{ item.sha1 }} <br/>
+                    </td>
+                    <td>
+                        {{ item.created }}
+                    </td>
+                    <td>
+                        {{ item.cert.not_valid_after }}
+                    </td>
+                    <td>
+                        {% if item.is_ca %}
+                            <i class="glyphicon glyphicon-cloud"></i> CA
+                        {% endif %}
+                        {% if item.is_server %}
+                            <i class="glyphicon glyphicon-tasks"></i> Server
+                        {% endif %}
+                        {% if item.is_client %}
+                            <i class="glyphicon glyphicon-user"></i> Client
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for(".detail",id=item.id) }}">
+                            {{ item.cn }}
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
