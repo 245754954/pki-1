@@ -2,16 +2,16 @@
 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}操作确认{% endblock %}
+{% block title %}Confirm{% endblock %}
 
 {% block content %}
     <div class="panel panel-danger">
         <div class="panel-heading">
-            操作确认
+            Confirm to continue
         </div>
         <div class="panel-body">
             <p>
-                {{ message | default("该操作不可逆") }}
+                {{ message | default("this is dangerous") }}
             </p>
             {{ wtf.quick_form(form) }}
         </div>

@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}证书详情{% endblock %}
+{% block title %}Detail{% endblock %}
 
 {% block content %}
 
     <ol class="breadcrumb">
-        <li><a href="{{ url_for(".home") }}">证书列表</a></li>
-        <li>证书详情</li>
+        <li><a href="{{ url_for(".home") }}">Certificates</a></li>
+        <li>Detail</li>
     </ol>
 
     {% if crt.is_ca %}
         <p>
             <a href="{{ url_for(".create",parent=item.id) }}" class="btn btn-default">
                 <i class="glyphicon glyphicon-plus"></i>
-                签发子证书
+                Create a child Certificate
             </a>
             <a href="{{ url_for(".delete",id=item.id) }}" class="btn btn-danger">
                 <i class="glyphicon glyphicon-trash"></i>
-                删除
+                Delete
             </a>
         </p>
     {% endif %}
@@ -25,7 +25,7 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            证书详情
+            Detail
         </div>
         <table class="table table-bordered">
             <tbody>

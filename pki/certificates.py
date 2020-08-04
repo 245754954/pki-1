@@ -19,7 +19,7 @@ bp = Blueprint("certificates", __name__)
 @bp.route("/")
 def home():
     """
-    证书列表
+    List
     :return:
     """
     certificates = Certificate.objects()
@@ -29,7 +29,7 @@ def home():
 @bp.route("/create", methods=["POST", "GET"])
 def create():
     """
-    新建证书
+    Create
     :return:
     """
     parent_id = request.args.get("parent")
@@ -172,7 +172,7 @@ def create():
 
         c.save()
 
-        flash(f"证书创建成功")
+        flash(f"Create successful")
 
         return redirect(url_for(".home"))
 
@@ -182,7 +182,7 @@ def create():
 @bp.route("/<id>")
 def detail(id):
     """
-    证书详情
+    Detail
     :param id:
     :return:
     """
@@ -193,7 +193,7 @@ def detail(id):
 @bp.route("/<id>/delete", methods=["POST", "GET"])
 def delete(id):
     """
-    证书删除
+    Delete
     :param id:
     :return:
     """
@@ -203,16 +203,16 @@ def delete(id):
 
     if form.validate_on_submit():
         cert.delete()
-        flash("删除成功")
+        flash("Delete successful")
         return redirect(url_for(".home"))
 
-    return render_template("confirm.html", form=form)
+    return render_template("confirm.html", form=form, message="This certificate will be PERMANENTLY deleted.")
 
 
 @bp.route("/<id>/export/<format>")
 def export(id, format):
     """
-    证书导出
+    Export
     :return:
     """
     cert = Certificate.objects(id=id).get()
@@ -254,7 +254,7 @@ def export(id, format):
         response.headers['Content-Type'] = 'application/x-pem-file'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.key'
     elif format == "pkcs12":
-        # 验证 openssl pkcs12 -nodes -in me.p12
+        # openssl pkcs12 -nodes -in me.p12
         response = make_response(cert.pkcs12.export())
         response.headers['Content-Type'] = 'application/pkcs12'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.p12'

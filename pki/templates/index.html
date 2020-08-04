@@ -1,38 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}证书列表{% endblock %}
+{% block title %}Certificates{% endblock %}
 
 {% block content %}
 
     <p>
         <a href="{{ url_for(".create") }}" class="btn btn-primary">
             <i class="glyphicon glyphicon-plus"></i>
-            创建证书
+            Create a Root CA certificate
         </a>
     </p>
 
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            证书
+            Certificates
         </div>
         <table class="table table-bordered">
             <thead>
             <tr>
-                <th>SHA1 指纹</th>
-                <th>创建时间</th>
-                <th>到期时间</th>
-                <th>用途</th>
-                <th>通用名称</th>
-                <th>操作</th>
+                <th>Fingerprint(SHA1)</th>
+                <th>Created</th>
+                <th>Expired</th>
+                <th>Usage</th>
+                <th>Common Name</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody>
             {% for item in certificates %}
                 <tr>
                     <td>
-                        {{ item.sha1[:8] }}
-                        <i class="glyphicon glyphicon-info-sign" title="{{ item.sha1 }}"></i> <br/>
+                        {{ item.sha1 }}
                     </td>
                     <td>
                         {{ item.created }}
@@ -58,7 +57,7 @@
                     </td>
                     <td>
                         <a href="{{ url_for(".delete",id=item.id) }}">
-                            删除
+                            Delete
                         </a>
                     </td>
                 </tr>

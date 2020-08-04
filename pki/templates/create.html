@@ -2,18 +2,18 @@
 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}创建证书{% endblock %}
+{% block title %}Create Certificate{% endblock %}
 
 {% block content %}
 
     <ol class="breadcrumb">
-        <li><a href="{{ url_for(".home") }}">证书列表</a></li>
-        <li>创建证书</li>
+        <li><a href="{{ url_for(".home") }}">Certificates</a></li>
+        <li>Create</li>
     </ol>
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            创建证书
+            Certificate Properties
         </div>
         <div class="panel-body">
             {{ wtf.quick_form(form) }}
