@@ -10,120 +10,137 @@
     </ol>
 
     {% if crt.is_ca %}
-        <a href="{{ url_for(".create",parent=item.id) }}" class="btn btn-primary">签发子证书</a>
+        <p>
+            <a href="{{ url_for(".create",parent=item.id) }}" class="btn btn-default">
+                <i class="glyphicon glyphicon-plus"></i>
+                签发子证书
+            </a>
+            <a href="{{ url_for(".delete",id=item.id) }}" class="btn btn-danger">
+                <i class="glyphicon glyphicon-trash"></i>
+                删除
+            </a>
+        </p>
     {% endif %}
 
-    <table class="table" style="margin-top: 1em">
-        <tbody>
-        <tr>
-            <th colspan="2">
-                Subject Name
-            </th>
-        </tr>
-        {% for imte in cert.subject %}
-            <tr>
-                <td style="text-align: right">{{ imte.oid._name }}</td>
-                <td>
-                    {{ imte.value }}
-                </td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <th colspan="2">
-                Issuer Name
-            </th>
-        </tr>
-        {% for imte in cert.issuer %}
-            <tr>
-                <td style="text-align: right">{{ imte.oid._name }}</td>
-                <td>
-                    {{ imte.value }}
-                </td>
-            </tr>
-        {% endfor %}
 
-        <tr>
-            <th colspan="2">
-                Validity
-            </th>
-        </tr>
-        <tr>
-            <td style="text-align: right">Not Before</td>
-            <td>
-                {{ cert.not_valid_before }}
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Not After</td>
-            <td>
-                {{ cert.not_valid_after }}
-            </td>
-        </tr>
-
-        <tr>
-            <th colspan="2">
-                Miscellaneous
-            </th>
-        </tr>
-        <tr>
-            <td style="text-align: right">Serial Number</td>
-            <td>
-                {{ cert.serial_number }}
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Signature Algorithm</td>
-            <td>
-                {{ cert.signature_hash_algorithm.name }}
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Version</td>
-            <td>
-                {{ cert.version }}
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Download</td>
-            <td>
-                <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">key</a>
-                <a href="{{ url_for(".export",id=item.id,format='crt') }}" class="btn btn-default">cert</a>
-                <a href="{{ url_for(".export",id=item.id,format='crt-chain') }}" class="btn btn-default">cert(chain)</a>
-                <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">pkcs12</a>
-            </td>
-        </tr>
-        <tr>
-            <th colspan="2">
-                Fingerprints
-            </th>
-        </tr>
-        <tr>
-            <td style="text-align: right">SHA-1</td>
-            <td>
-                {{ item.sha1 }}
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">SHA-256</td>
-            <td>
-                {{ item.sha256 }}
-            </td>
-        </tr>
-        <tr>
-            <th colspan="2">
-                Extensions
-            </th>
-        </tr>
-        {% for ext in cert.extensions %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            证书详情
+        </div>
+        <table class="table table-bordered">
+            <tbody>
             <tr>
-                <td style="text-align: right">{{ ext.oid._name }}</td>
+                <th colspan="2">
+                    Subject Name
+                </th>
+            </tr>
+            {% for imte in cert.subject %}
+                <tr>
+                    <td style="text-align: right">{{ imte.oid._name }}</td>
+                    <td>
+                        {{ imte.value }}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <th colspan="2">
+                    Issuer Name
+                </th>
+            </tr>
+            {% for imte in cert.issuer %}
+                <tr>
+                    <td style="text-align: right">{{ imte.oid._name }}</td>
+                    <td>
+                        {{ imte.value }}
+                    </td>
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <th colspan="2">
+                    Validity
+                </th>
+            </tr>
+            <tr>
+                <td style="text-align: right">Not Before</td>
                 <td>
-                    {{ ext.value }}
+                    {{ cert.not_valid_before }}
                 </td>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            <tr>
+                <td style="text-align: right">Not After</td>
+                <td>
+                    {{ cert.not_valid_after }}
+                </td>
+            </tr>
+
+            <tr>
+                <th colspan="2">
+                    Miscellaneous
+                </th>
+            </tr>
+            <tr>
+                <td style="text-align: right">Serial Number</td>
+                <td>
+                    {{ cert.serial_number }}
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">Signature Algorithm</td>
+                <td>
+                    {{ cert.signature_hash_algorithm.name }}
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">Version</td>
+                <td>
+                    {{ cert.version }}
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">Download</td>
+                <td>
+                    <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">key</a>
+                    <a href="{{ url_for(".export",id=item.id,format='crt') }}" class="btn btn-default">cert</a>
+                    <a href="{{ url_for(".export",id=item.id,format='crt-chain') }}"
+                       class="btn btn-default">cert(chain)</a>
+                    <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">pkcs12</a>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="2">
+                    Fingerprints
+                </th>
+            </tr>
+            <tr>
+                <td style="text-align: right">SHA-1</td>
+                <td>
+                    {{ item.sha1 }}
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">SHA-256</td>
+                <td>
+                    {{ item.sha256 }}
+                </td>
+            </tr>
+            <tr>
+                <th colspan="2">
+                    Extensions
+                </th>
+            </tr>
+            {% for ext in cert.extensions %}
+                <tr>
+                    <td style="text-align: right">{{ ext.oid._name }}</td>
+                    <td>
+                        {{ ext.value }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 {% endblock %}
 
 {% block scripts %}

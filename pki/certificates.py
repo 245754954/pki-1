@@ -8,7 +8,7 @@ from ipaddress import IPv4Address
 from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response
 from cryptography.hazmat.primitives import serialization
 
-from pki.forms import CreateCertificateForm
+from pki.forms import CreateCertificateForm, ConfirmForm
 from pki.models import Certificate
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def create():
         data={
             "parent": parent_cert.cert.serial_number if parent_cert else 0,
             "is_ca": False if parent_cert else True,
-            "cn": "example.com" if parent_cert else "My Root CA",
+            "cn": "example.com" if parent_cert else "Example Root CA",
         }
     )
 
@@ -190,6 +190,25 @@ def detail(id):
     return render_template("detail.html", crt=cert, cert=cert.cert, item=cert)
 
 
+@bp.route("/<id>/delete", methods=["POST", "GET"])
+def delete(id):
+    """
+    证书删除
+    :param id:
+    :return:
+    """
+
+    form = ConfirmForm()
+    cert = Certificate.objects(id=id).get()
+
+    if form.validate_on_submit():
+        cert.delete()
+        flash("删除成功")
+        return redirect(url_for(".home"))
+
+    return render_template("confirm.html", form=form)
+
+
 @bp.route("/<id>/export/<format>")
 def export(id, format):
     """
@@ -232,7 +251,7 @@ def export(id, format):
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         ))
-        response.headers['Content-Type'] = 'application/x-x509-ca-cert'
+        response.headers['Content-Type'] = 'application/x-pem-file'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.key'
     elif format == "pkcs12":
         # 验证 openssl pkcs12 -nodes -in me.p12

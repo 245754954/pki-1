@@ -6,6 +6,7 @@
 
     <p>
         <a href="{{ url_for(".create") }}" class="btn btn-primary">
+            <i class="glyphicon glyphicon-plus"></i>
             创建证书
         </a>
     </p>
@@ -21,15 +22,17 @@
                 <th>SHA1 指纹</th>
                 <th>创建时间</th>
                 <th>到期时间</th>
-                <th>模式</th>
+                <th>用途</th>
                 <th>通用名称</th>
+                <th>操作</th>
             </tr>
             </thead>
             <tbody>
             {% for item in certificates %}
                 <tr>
                     <td>
-                        {{ item.sha1 }} <br/>
+                        {{ item.sha1[:8] }}
+                        <i class="glyphicon glyphicon-info-sign" title="{{ item.sha1 }}"></i> <br/>
                     </td>
                     <td>
                         {{ item.created }}
@@ -51,6 +54,11 @@
                     <td>
                         <a href="{{ url_for(".detail",id=item.id) }}">
                             {{ item.cn }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for(".delete",id=item.id) }}">
+                            删除
                         </a>
                     </td>
                 </tr>
