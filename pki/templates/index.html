@@ -2,6 +2,15 @@
 
 {% block title %}Certificates{% endblock %}
 
+{% block styles %}
+    {{ super() }}
+    <style>
+        .revoked td:first-child {
+            text-decoration: line-through;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 
     <p>
@@ -25,11 +34,12 @@
                 <th>Usage</th>
                 <th>Common Name</th>
                 <th>Actions</th>
+                <th>Status</th>
             </tr>
             </thead>
             <tbody>
             {% for item in certificates %}
-                <tr>
+                <tr {% if item.revoked %}class="revoked"{% endif %}>
                     <td>
                         {{ item.sha1 }}
                     </td>
@@ -59,6 +69,17 @@
                         <a href="{{ url_for(".delete",id=item.id) }}">
                             Delete
                         </a>
+                        |
+                        <a href="{{ url_for(".revoke",id=item.id) }}">
+                            Revoke
+                        </a>
+                    </td>
+                    <td>
+                        {% if item.revoked %}
+                            revoked
+                        {% else %}
+                            available
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

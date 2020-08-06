@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, redirect
 from flask_bootstrap import Bootstrap
 from mongoengine import connect
 
@@ -15,6 +15,10 @@ def create_app():
 
     connect("default", host=app.config.get("MONGODB_URL"))
     Bootstrap(app)
+
+    @app.route("/")
+    def home():
+        return redirect("/certificates")
 
     from pki import certificates
     app.register_blueprint(certificates.bp, url_prefix="/certificates")

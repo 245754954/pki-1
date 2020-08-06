@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from cryptography import x509
+from cryptography.x509 import ocsp
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -93,6 +94,20 @@ def create():
             x509.BasicConstraints(form.is_ca.data, None), critical=False
         )
 
+        # ocsp
+        cert = cert.add_extension(
+            x509.AuthorityInformationAccess([
+                # openssl x509 -in 95285781730451486911577519787958288522332983584.crt -ocsp_uri -noout
+                x509.AccessDescription(
+                    x509.OID_OCSP,
+                    x509.UniformResourceIdentifier(url_for(".ocsp_response", _external=True))),
+                x509.AccessDescription(
+                    x509.OID_CA_ISSUERS,
+                    x509.UniformResourceIdentifier(
+                        url_for(".home", _external=True)))
+            ]), critical=False
+        )
+
         # key_usage
         if form.is_ca.data:
             cert = cert.add_extension(
@@ -164,7 +179,8 @@ def create():
 
         c = Certificate(
             key=key,
-            cert=cert
+            cert=cert,
+            serial_number=str(serial_number)
         )
 
         if parent_cert:
@@ -259,3 +275,72 @@ def export(id, format):
         response.headers['Content-Type'] = 'application/pkcs12'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.p12'
     return response
+
+
+@bp.route("/<id>/revoke", methods=["POST", "GET"])
+def revoke(id):
+    """
+    Delete
+    :param id:
+    :return:
+    """
+
+    form = ConfirmForm()
+    cert = Certificate.objects(id=id).get()
+
+    if form.validate_on_submit():
+        cert.update(
+            revoked=True,
+            revoked_at=datetime.utcnow()
+        )
+        flash("revoke successful")
+        return redirect(url_for(".home"))
+
+    return render_template("confirm.html", form=form, message="This certificate will be REVOKED.")
+
+
+@bp.route("/ocsp", methods=["POST", "GET"])
+def ocsp_response():
+    try:
+        req = ocsp.load_der_ocsp_request(request.data)
+        cert = Certificate.objects(serial_number=str(req.serial_number)).get()
+        builder = ocsp.OCSPResponseBuilder()
+
+        if cert.revoked:
+            builder = builder.add_response(
+                cert=cert.cert,
+                issuer=cert.cert,
+                algorithm=hashes.SHA1(),
+                cert_status=ocsp.OCSPCertStatus.REVOKED,
+                this_update=datetime.utcnow(),
+                next_update=datetime.utcnow(),
+                revocation_time=cert.revoked_at,
+                revocation_reason=None
+            )
+        else:
+            builder = builder.add_response(
+                cert=cert.cert,
+                issuer=cert.cert,
+                algorithm=hashes.SHA1(),
+                cert_status=ocsp.OCSPCertStatus.GOOD,
+                this_update=datetime.utcnow(),
+                next_update=datetime.utcnow(),
+                revocation_time=None,
+                revocation_reason=None
+            )
+
+        builder = builder.responder_id(
+            ocsp.OCSPResponderEncoding.HASH, cert.cert
+        )
+        response = builder.sign(cert.key, hashes.SHA256())
+        return response.public_bytes(
+            serialization.Encoding.DER
+        )
+    except Exception as e:
+        print(e)
+        response = ocsp.OCSPResponseBuilder.build_unsuccessful(
+            ocsp.OCSPResponseStatus.INTERNAL_ERROR
+        )
+        return response.public_bytes(
+            serialization.Encoding.DER
+        )

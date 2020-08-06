@@ -66,6 +66,9 @@ class Certificate(mongoengine.DynamicDocument):
     created = mongoengine.DateTimeField(default=datetime.utcnow)
     key = PrivateKeyField()
     cert = CertField()
+    serial_number = mongoengine.StringField()
+    revoked = mongoengine.BooleanField()
+    revoked_at = mongoengine.DateTimeField()
 
     @property
     def sha1(self):
