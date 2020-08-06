@@ -29,5 +29,17 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
 
+  nginx:
+    image: "nginx:1.19.1"
+    ports:
+      - "127.0.0.1:443:443"
+    volumes:
+      - "./tests/default.conf:/etc/nginx/conf.d/default.conf"
+      - "./tests:/ssl"
+
+  whoami:
+    image: "containous/whoami"
+
+
 volumes:
   mongo:

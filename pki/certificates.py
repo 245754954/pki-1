@@ -154,6 +154,9 @@ def create():
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
         if form.client_auth.data:
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
+        if form.is_ca.data:
+            extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING)
+
         if len(extended_key_usage):
             cert = cert.add_extension(
                 x509.ExtendedKeyUsage(extended_key_usage), critical=False
@@ -300,47 +303,45 @@ def revoke(id):
 
 
 @bp.route("/ocsp", methods=["POST", "GET"])
-def ocsp_response():
-    try:
-        req = ocsp.load_der_ocsp_request(request.data)
-        cert = Certificate.objects(serial_number=str(req.serial_number)).get()
-        builder = ocsp.OCSPResponseBuilder()
+@bp.route("/ocsp/<id>", methods=["POST", "GET"])
+def ocsp_response(id):
+    import base64
+    req = ocsp.load_der_ocsp_request(request.data or base64.b64decode(id))
+    cert = Certificate.objects(serial_number=str(req.serial_number)).get()
+    ca_cert = Certificate.objects(id=cert.pid).get()
 
-        if cert.revoked:
-            builder = builder.add_response(
-                cert=cert.cert,
-                issuer=cert.cert,
-                algorithm=hashes.SHA1(),
-                cert_status=ocsp.OCSPCertStatus.REVOKED,
-                this_update=datetime.utcnow(),
-                next_update=datetime.utcnow(),
-                revocation_time=cert.revoked_at,
-                revocation_reason=None
-            )
-        else:
-            builder = builder.add_response(
-                cert=cert.cert,
-                issuer=cert.cert,
-                algorithm=hashes.SHA1(),
-                cert_status=ocsp.OCSPCertStatus.GOOD,
-                this_update=datetime.utcnow(),
-                next_update=datetime.utcnow(),
-                revocation_time=None,
-                revocation_reason=None
-            )
+    builder = ocsp.OCSPResponseBuilder()
 
-        builder = builder.responder_id(
-            ocsp.OCSPResponderEncoding.HASH, cert.cert
+    if cert.revoked:
+        builder = builder.add_response(
+            cert=cert.cert,
+            issuer=cert.cert,
+            algorithm=hashes.SHA1(),
+            cert_status=ocsp.OCSPCertStatus.REVOKED,
+            this_update=datetime.utcnow(),
+            next_update=datetime.utcnow(),
+            revocation_time=cert.revoked_at,
+            revocation_reason=None
         )
-        response = builder.sign(cert.key, hashes.SHA256())
-        return response.public_bytes(
-            serialization.Encoding.DER
+    else:
+        builder = builder.add_response(
+            cert=cert.cert,
+            issuer=cert.cert,
+            algorithm=hashes.SHA1(),
+            cert_status=ocsp.OCSPCertStatus.GOOD,
+            this_update=datetime.utcnow(),
+            next_update=datetime.utcnow(),
+            revocation_time=None,
+            revocation_reason=None
         )
-    except Exception as e:
-        print(e)
-        response = ocsp.OCSPResponseBuilder.build_unsuccessful(
-            ocsp.OCSPResponseStatus.INTERNAL_ERROR
-        )
-        return response.public_bytes(
-            serialization.Encoding.DER
-        )
+
+    builder = builder.responder_id(
+        ocsp.OCSPResponderEncoding.HASH, ca_cert.cert
+    )
+    response_object = builder.sign(ca_cert.key, hashes.SHA256())
+    response = make_response(response_object.public_bytes(
+        serialization.Encoding.DER
+    ))
+    response.headers['Content-Type'] = 'application/ocsp-response'
+
+    return response
