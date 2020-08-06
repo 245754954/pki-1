@@ -1,6 +1,16 @@
 version: "2"
 services:
 
+  pki:
+    image: pki
+    build:
+      context: pki
+    working_dir: "/"
+    environment:
+      MONGODB_URL: "mongodb://mongo:27017"
+    ports:
+      - "127.0.0.1:5000:5000"
+
   mongo:
     image: "mongo:4.2"
     restart: "always"
