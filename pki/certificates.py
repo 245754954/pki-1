@@ -154,8 +154,6 @@ def create():
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
         if form.client_auth.data:
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
-        if form.is_ca.data:
-            extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING)
 
         if len(extended_key_usage):
             cert = cert.add_extension(
@@ -315,7 +313,7 @@ def ocsp_response(id):
     if cert.revoked:
         builder = builder.add_response(
             cert=cert.cert,
-            issuer=cert.cert,
+            issuer=ca_cert.cert,
             algorithm=hashes.SHA1(),
             cert_status=ocsp.OCSPCertStatus.REVOKED,
             this_update=datetime.utcnow(),
@@ -326,7 +324,7 @@ def ocsp_response(id):
     else:
         builder = builder.add_response(
             cert=cert.cert,
-            issuer=cert.cert,
+            issuer=ca_cert.cert,
             algorithm=hashes.SHA1(),
             cert_status=ocsp.OCSPCertStatus.GOOD,
             this_update=datetime.utcnow(),
