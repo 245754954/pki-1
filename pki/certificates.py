@@ -36,20 +36,46 @@ def create():
     parent_id = request.args.get("parent")
     parent_cert = Certificate.objects(id=parent_id).first() if parent_id else None
 
-    form = CreateCertificateForm(
-        data={
-            "parent": parent_cert.cert.serial_number if parent_cert else 0,
-            "is_ca": False if parent_cert else True,
-            "cn": "example.com" if parent_cert else "Example Root CA",
-        }
-    )
+    if parent_cert:
+        form = CreateCertificateForm(
+            data={
+                "parent": parent_cert.cert.serial_number,
+                "mode": {
+                    "is_ca": False
+                },
+                "cn": "example.com",
+                "aia": {
+                    "enabled": True,
+                    'ca_issuers': f"{url_for('.export', id=parent_id, format='crt-chain', _external=True)}",
+                    'ocsp': url_for(".ocsp_response", _external=True)
+                }
+            }
+        )
+    else:
+        form = CreateCertificateForm(
+            data={
+                "parent": 0,
+                "mode": {
+                    "is_ca": True
+                },
+                "cn": "Example Root CA",
+                "aia": {
+                    "enabled": False,
+                    'ca_issuers': url_for(".home", _external=True),
+                    'ocsp': url_for(".ocsp_response", _external=True)
+                }
+            }
+        )
+
 
     if form.validate_on_submit():
+        # key
         key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048,
             backend=default_backend()
         )
+
         # serial number
         serial_number = x509.random_serial_number()
 
@@ -63,10 +89,10 @@ def create():
             x509.NameAttribute(x509.NameOID.COMMON_NAME, form.cn.data),
         ])
 
-        # issuer
+        # issuer and signing key
         issuer = parent_cert.cert.issuer if parent_cert else subject
-
         signing_key = parent_cert.key if parent_cert else key
+
         cert = x509.CertificateBuilder().subject_name(
             subject
         ).issuer_name(
@@ -83,6 +109,7 @@ def create():
             x509.SubjectKeyIdentifier.from_public_key(key.public_key()), critical=False
         ).add_extension(
             x509.AuthorityKeyIdentifier(
+                # @todo remove internal method
                 x509.extensions._key_identifier_from_public_key(signing_key.public_key()),
                 None,
                 None
@@ -91,25 +118,25 @@ def create():
 
         # basic constraints
         cert = cert.add_extension(
-            x509.BasicConstraints(form.is_ca.data, None), critical=False
+            x509.BasicConstraints(form.mode.data.get('is_ca'), None), critical=False
         )
 
         # ocsp
-        cert = cert.add_extension(
-            x509.AuthorityInformationAccess([
-                # openssl x509 -in 95285781730451486911577519787958288522332983584.crt -ocsp_uri -noout
-                x509.AccessDescription(
-                    x509.OID_OCSP,
-                    x509.UniformResourceIdentifier(url_for(".ocsp_response", _external=True))),
-                x509.AccessDescription(
-                    x509.OID_CA_ISSUERS,
-                    x509.UniformResourceIdentifier(
-                        url_for(".home", _external=True)))
-            ]), critical=False
-        )
+        if form.aia.data.get("enabled"):
+            cert = cert.add_extension(
+                x509.AuthorityInformationAccess([
+                    # openssl x509 -in 95285781730451486911577519787958288522332983584.crt -ocsp_uri -noout
+                    x509.AccessDescription(
+                        x509.OID_OCSP,
+                        x509.UniformResourceIdentifier(form.aia.data.get('ocsp'))),
+                    x509.AccessDescription(
+                        x509.OID_CA_ISSUERS,
+                        x509.UniformResourceIdentifier(form.aia.data.get('ca_issuers')))
+                ]), critical=False
+            )
 
         # key_usage
-        if form.is_ca.data:
+        if form.mode.data.get('is_ca'):
             cert = cert.add_extension(
                 x509.KeyUsage(
                     # 数字签名
@@ -150,9 +177,9 @@ def create():
 
         # extended_key_usage
         extended_key_usage = []
-        if form.server_auth.data:
+        if form.mode.data.get('is_server_auth'):
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
-        if form.client_auth.data:
+        if form.mode.data.get('is_client_auth'):
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
 
         if len(extended_key_usage):

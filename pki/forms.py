@@ -1,9 +1,22 @@
 import wtforms
 from flask_wtf import FlaskForm
+from wtforms import Form
 
 
 class ConfirmForm(FlaskForm):
     submit = wtforms.SubmitField("Confirm")
+
+
+class AuthorityInformationAccessForm(Form):
+    enabled = wtforms.BooleanField("enabled")
+    ca_issuers = wtforms.StringField("CA Issueres")
+    ocsp = wtforms.StringField("OCSP")
+
+
+class ModeForm(Form):
+    is_ca = wtforms.BooleanField("CA")
+    is_server_auth = wtforms.BooleanField("Server Auth")
+    is_client_auth = wtforms.BooleanField("Client Auth")
 
 
 class CreateCertificateForm(FlaskForm):
@@ -31,10 +44,10 @@ class CreateCertificateForm(FlaskForm):
     duration = wtforms.IntegerField(
         "Duration", default=365, validators=[wtforms.validators.DataRequired()])
 
-    is_ca = wtforms.BooleanField("CA")
-    server_auth = wtforms.BooleanField("Server Auth")
-    client_auth = wtforms.BooleanField("Client Auth")
-
     parent = wtforms.StringField("Issuer Serial Number [SN]", render_kw={'disabled': ''})
+
+    mode = wtforms.FormField(ModeForm, label="Mode")
+
+    aia = wtforms.FormField(AuthorityInformationAccessForm, label="Authority Information Access")
 
     submit = wtforms.SubmitField("Create")

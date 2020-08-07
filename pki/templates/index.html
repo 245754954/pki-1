@@ -27,7 +27,6 @@
         <table class="table table-bordered">
             <thead>
             <tr>
-                <th>Fingerprint(SHA1)</th>
                 <th>Created</th>
                 <th>Expired</th>
                 <th>Usage</th>
@@ -39,9 +38,6 @@
             <tbody>
             {% for item in certificates %}
                 <tr {% if item.revoked %}class="revoked"{% endif %}>
-                    <td>
-                        {{ item.sha1 }}
-                    </td>
                     <td>
                         {{ item.created }}
                     </td>

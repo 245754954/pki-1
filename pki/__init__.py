@@ -13,7 +13,7 @@ def create_app():
         MONGODB_URL=os.environ.get("MONGODB_URL") or "mongodb://localhost:27017"
     )
 
-    connect("default", host=app.config.get("MONGODB_URL"))
+    connect("pki", host=app.config.get("MONGODB_URL"))
     Bootstrap(app)
 
     @app.route("/")
