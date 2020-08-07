@@ -9,6 +9,7 @@ docker-build-master:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
+    - cd pki
     - docker build --pull -t "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
