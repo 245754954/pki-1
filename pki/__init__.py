@@ -12,14 +12,7 @@ def create_app():
         SECRET_KEY=os.environ.get("SECRET_KEY") or "catfish",
         MONGODB_URL=os.environ.get("MONGODB_URL") or "mongodb://localhost:27017",
 
-        DEFAULT_COUNTRY=os.environ.get("DEFAULT_COUNTRY") or "CN",
-        DEFAULT_STATE=os.environ.get("DEFAULT_STATE") or "Beijing",
-        DEFAULT_LOCALITY=os.environ.get("DEFAULT_LOCALITY") or "Chaoyang",
-        DEFAULT_ORGANIZATION=os.environ.get("DEFAULT_ORGANIZATION") or "Example .ltd",
-        DEFAULT_UNIT=os.environ.get("DEFAULT_UNIT") or "IT",
-
         DEFAULT_DURATION=os.environ.get("DEFAULT_DURATION") or "365",
-
         DEFAULT_OCSP_URL=os.environ.get("DEFAULT_OCSP_URL") or "http://ocsp.example.com",
         DEFAULT_CA_ISSUER_URL=os.environ.get("DEFAULT_CA_ISSUER_URL") or "https://pki.example.com"
     )

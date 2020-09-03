@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timedelta
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
@@ -35,35 +36,44 @@ def create():
     parent_id = request.args.get("parent")
     parent_cert = Certificate.objects(id=parent_id).first() if parent_id else None
 
+    form_default_data = {}
+
+    # @todo how to list meta fields
+    # @todo rewrite with a intersect
+    field_names = [f.name for f in CreateCertificateForm() if hasattr(x509.NameOID, f.name)]
+
+    for field_name in field_names:
+        # get default value from environment variables
+        form_default_data[field_name] = os.environ.get(f"DEFAULT_{field_name}")
+
     if parent_cert:
         form = CreateCertificateForm(
             data={
+                **form_default_data,
+
+                "duration": int(current_app.config.get("DEFAULT_DURATION")),
                 "parent": parent_cert.cert.serial_number,
                 "mode": {
-                    "is_ca": False
+                    "is_server_auth": True,
+                    "is_client_auth": True,
                 },
-                "cn": "example.com",
                 "aia": {
-                    "enabled": True,
-                    'ca_issuers': f"{url_for('.export', id=parent_id, format='crt-chain', _external=True)}",
-                    'ocsp': url_for("ocsp.ocsp_response", _external=True)
+                    "enabled": False,
+                    'ca_issuers': current_app.config.get("DEFAULT_CA_ISSUER_URL"),
+                    'ocsp': current_app.config.get("DEFAULT_OCSP_URL")
                 }
             }
         )
     else:
         form = CreateCertificateForm(
             data={
-                "c": current_app.config.get("DEFAULT_COUNTRY"),
-                "st": current_app.config.get("DEFAULT_STATE"),
-                "l": current_app.config.get("DEFAULT_LOCALITY"),
-                "o": current_app.config.get("DEFAULT_ORGANIZATION"),
-                "ou": current_app.config.get("DEFAULT_UNIT"),
-                "duration": int(current_app.config.get("DEFAULT_DURATION")),
+                **form_default_data,
+
+                "duration": 10 * int(current_app.config.get("DEFAULT_DURATION")),
                 "parent": 0,
                 "mode": {
-                    "is_ca": True
+                    "is_ca": True,
                 },
-                "cn": "Example Root CA",
                 "aia": {
                     "enabled": False,
                     'ca_issuers': current_app.config.get("DEFAULT_CA_ISSUER_URL"),
@@ -84,18 +94,10 @@ def create():
         serial_number = x509.random_serial_number()
 
         # subject
-        names = [
-            x509.NameAttribute(x509.NameOID.COUNTRY_NAME, form.c.data),
-            x509.NameAttribute(x509.NameOID.STATE_OR_PROVINCE_NAME, form.st.data),
-            x509.NameAttribute(x509.NameOID.LOCALITY_NAME, form.l.data),
-            x509.NameAttribute(x509.NameOID.ORGANIZATION_NAME, form.o.data),
-            x509.NameAttribute(x509.NameOID.ORGANIZATIONAL_UNIT_NAME, form.ou.data),
-            x509.NameAttribute(x509.NameOID.COMMON_NAME, form.cn.data),
-        ]
-
-        if form.email.data:
-            names.append(x509.NameAttribute(x509.NameOID.EMAIL_ADDRESS, form.email.data))
-
+        names = []
+        for field_name in field_names:
+            if getattr(form, field_name).data:
+                names.append(x509.NameAttribute(getattr(x509.NameOID, field_name), getattr(form, field_name).data))
         subject = x509.Name(names)
 
         # issuer and signing key
@@ -120,6 +122,7 @@ def create():
             x509.AuthorityKeyIdentifier(
                 # @todo remove internal method
                 x509.extensions._key_identifier_from_public_key(signing_key.public_key()),
+                # @todo issuer
                 None,
                 None
             ), critical=False
@@ -138,6 +141,7 @@ def create():
                     x509.AccessDescription(
                         x509.OID_OCSP,
                         x509.UniformResourceIdentifier(form.aia.data.get('ocsp'))),
+                    # @todo validate issuers
                     x509.AccessDescription(
                         x509.OID_CA_ISSUERS,
                         x509.UniformResourceIdentifier(form.aia.data.get('ca_issuers')))
@@ -190,7 +194,6 @@ def create():
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
         if form.mode.data.get('is_client_auth'):
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
-
         if len(extended_key_usage):
             cert = cert.add_extension(
                 x509.ExtendedKeyUsage(extended_key_usage), critical=False

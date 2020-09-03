@@ -32,25 +32,19 @@ class ImportCertificateForm(FlaskForm):
 
 
 class CreateCertificateForm(FlaskForm):
-    c = wtforms.StringField(
-        "Country [C]", validators=[wtforms.validators.DataRequired()])
+    COUNTRY_NAME = wtforms.StringField("Country [C]")
 
-    st = wtforms.StringField(
-        "State [ST]", validators=[wtforms.validators.DataRequired()])
+    STATE_OR_PROVINCE_NAME = wtforms.StringField("State [ST]")
 
-    l = wtforms.StringField(
-        "Locality [L] ", validators=[wtforms.validators.DataRequired()])
+    LOCALITY_NAME = wtforms.StringField("Locality [L] ")
 
-    o = wtforms.StringField(
-        "Organization [O]", validators=[wtforms.validators.DataRequired()])
+    ORGANIZATION_NAME = wtforms.StringField("Organization [O]")
 
-    ou = wtforms.StringField(
-        "Organization Unit [OU]", validators=[wtforms.validators.DataRequired()])
+    ORGANIZATIONAL_UNIT_NAME = wtforms.StringField("Organization Unit [OU]")
 
-    cn = wtforms.StringField(
-        "Common Name [CN]", validators=[wtforms.validators.DataRequired()])
+    COMMON_NAME = wtforms.StringField("Common Name [CN]", validators=[wtforms.validators.DataRequired()])
 
-    email = wtforms.StringField("Email [E]", validators=[])
+    EMAIL_ADDRESS = wtforms.StringField("Email [E]")
 
     san = wtforms.TextAreaField("Subject Alternative Name [SAN]", description="IP or domain, one item each line")
 
