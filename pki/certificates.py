@@ -1,12 +1,11 @@
 import logging
 from datetime import datetime, timedelta
 from cryptography import x509
-from cryptography.x509 import ocsp
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from ipaddress import IPv4Address
-from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response
+from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app
 from cryptography.hazmat.primitives import serialization
 
 from pki.forms import CreateCertificateForm, ConfirmForm
@@ -47,7 +46,7 @@ def create():
                 "aia": {
                     "enabled": True,
                     'ca_issuers': f"{url_for('.export', id=parent_id, format='crt-chain', _external=True)}",
-                    'ocsp': url_for(".ocsp_response", _external=True)
+                    'ocsp': url_for("ocsp.ocsp_response", _external=True)
                 }
             }
         )
@@ -67,12 +66,11 @@ def create():
                 "cn": "Example Root CA",
                 "aia": {
                     "enabled": False,
-                    'ca_issuers': url_for(".home", _external=True),
-                    'ocsp': url_for(".ocsp_response", _external=True)
+                    'ca_issuers': current_app.config.get("DEFAULT_CA_ISSUER_URL"),
+                    'ocsp': current_app.config.get("DEFAULT_OCSP_URL")
                 }
             }
         )
-
 
     if form.validate_on_submit():
         # key
@@ -331,48 +329,3 @@ def revoke(id):
         return redirect(url_for(".home"))
 
     return render_template("confirm.html", form=form, message="This certificate will be REVOKED.")
-
-
-@bp.route("/ocsp", methods=["POST", "GET"])
-@bp.route("/ocsp/<id>", methods=["POST", "GET"])
-def ocsp_response(id):
-    import base64
-    req = ocsp.load_der_ocsp_request(request.data or base64.b64decode(id))
-    cert = Certificate.objects(serial_number=str(req.serial_number)).get()
-    ca_cert = Certificate.objects(id=cert.pid).get()
-
-    builder = ocsp.OCSPResponseBuilder()
-
-    if cert.revoked:
-        builder = builder.add_response(
-            cert=cert.cert,
-            issuer=ca_cert.cert,
-            algorithm=hashes.SHA1(),
-            cert_status=ocsp.OCSPCertStatus.REVOKED,
-            this_update=datetime.utcnow(),
-            next_update=datetime.utcnow(),
-            revocation_time=cert.revoked_at,
-            revocation_reason=None
-        )
-    else:
-        builder = builder.add_response(
-            cert=cert.cert,
-            issuer=ca_cert.cert,
-            algorithm=hashes.SHA1(),
-            cert_status=ocsp.OCSPCertStatus.GOOD,
-            this_update=datetime.utcnow(),
-            next_update=datetime.utcnow(),
-            revocation_time=None,
-            revocation_reason=None
-        )
-
-    builder = builder.responder_id(
-        ocsp.OCSPResponderEncoding.HASH, ca_cert.cert
-    )
-    response_object = builder.sign(ca_cert.key, hashes.SHA256())
-    response = make_response(response_object.public_bytes(
-        serialization.Encoding.DER
-    ))
-    response.headers['Content-Type'] = 'application/ocsp-response'
-
-    return response
