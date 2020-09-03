@@ -84,14 +84,19 @@ def create():
         serial_number = x509.random_serial_number()
 
         # subject
-        subject = x509.Name([
+        names = [
             x509.NameAttribute(x509.NameOID.COUNTRY_NAME, form.c.data),
             x509.NameAttribute(x509.NameOID.STATE_OR_PROVINCE_NAME, form.st.data),
             x509.NameAttribute(x509.NameOID.LOCALITY_NAME, form.l.data),
             x509.NameAttribute(x509.NameOID.ORGANIZATION_NAME, form.o.data),
             x509.NameAttribute(x509.NameOID.ORGANIZATIONAL_UNIT_NAME, form.ou.data),
             x509.NameAttribute(x509.NameOID.COMMON_NAME, form.cn.data),
-        ])
+        ]
+
+        if form.email.data:
+            names.append(x509.NameAttribute(x509.NameOID.EMAIL_ADDRESS, form.email.data))
+
+        subject = x509.Name(names)
 
         # issuer and signing key
         issuer = parent_cert.cert.issuer if parent_cert else subject

@@ -1,4 +1,5 @@
 import wtforms
+import email_validator
 from flask_wtf import FlaskForm
 from wtforms import Form
 
@@ -9,8 +10,10 @@ class ConfirmForm(FlaskForm):
 
 class AuthorityInformationAccessForm(Form):
     enabled = wtforms.BooleanField("enabled")
-    ca_issuers = wtforms.StringField("CA Issueres")
-    ocsp = wtforms.StringField("OCSP")
+    ca_issuers = wtforms.StringField(
+        "CA Issueres", description="Must be a valid url", validators=[wtforms.validators.URL()])
+    ocsp = wtforms.StringField(
+        "OCSP", description="Must be a valid url", validators=[wtforms.validators.URL()])
 
 
 class ModeForm(Form):
@@ -20,10 +23,12 @@ class ModeForm(Form):
 
 
 class ImportCertificateForm(FlaskForm):
-    certificate = wtforms.TextAreaField("Certificate")
-    private_key = wtforms.TextAreaField("Private Key")
-    password = wtforms.PasswordField("Private Key Password")
-    submit = wtforms.SubmitField("Confirm")
+    certificate = wtforms.TextAreaField(
+        "Certificate", description="PEM Format", validators=[wtforms.validators.DataRequired()])
+    private_key = wtforms.TextAreaField(
+        "Private Key", description="PEM Format", validators=[wtforms.validators.DataRequired()])
+    password = wtforms.PasswordField("Private Key Password", description="Keep empty if no password")
+    submit = wtforms.SubmitField("Import")
 
 
 class CreateCertificateForm(FlaskForm):
@@ -45,10 +50,11 @@ class CreateCertificateForm(FlaskForm):
     cn = wtforms.StringField(
         "Common Name [CN]", validators=[wtforms.validators.DataRequired()])
 
+    email = wtforms.StringField("Email [E]", validators=[])
+
     san = wtforms.TextAreaField("Subject Alternative Name [SAN]", description="IP or domain, one item each line")
 
-    duration = wtforms.IntegerField(
-        "Duration", validators=[wtforms.validators.DataRequired()])
+    duration = wtforms.IntegerField("Duration", description="Days", validators=[wtforms.validators.DataRequired()])
 
     parent = wtforms.StringField("Issuer Serial Number [SN]", render_kw={'disabled': ''})
 
@@ -57,3 +63,15 @@ class CreateCertificateForm(FlaskForm):
     aia = wtforms.FormField(AuthorityInformationAccessForm, label="Authority Information Access")
 
     submit = wtforms.SubmitField("Create")
+
+    def validate_email(self, field):
+        """
+        validate email if any
+        :param field:
+        :return:
+        """
+        if field.data:
+            email_validator.validate_email(
+                field.data,
+                check_deliverability=True,
+            )
