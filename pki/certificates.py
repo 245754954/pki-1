@@ -45,6 +45,11 @@ def create():
     for field_name in field_names:
         # get default value from environment variables
         form_default_data[field_name] = os.environ.get(f"DEFAULT_{field_name}")
+        # get default value from parent certificate if any
+        if parent_cert:
+            for item in parent_cert.cert.subject:
+                if item.oid == getattr(x509.NameOID, field_name):
+                    form_default_data[field_name] = item.value
 
     if parent_cert:
         form = CreateCertificateForm(
@@ -189,6 +194,7 @@ def create():
             )
 
         # extended_key_usage
+        # @todo render all extended key usage
         extended_key_usage = []
         if form.mode.data.get('is_server_auth'):
             extended_key_usage.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
@@ -217,18 +223,16 @@ def create():
         # sign
         cert = cert.sign(signing_key, hashes.SHA256(), default_backend())
 
+        # save
         c = Certificate(
             key=key,
             cert=cert,
-            serial_number=str(serial_number)
+            serial_number=str(serial_number),
+            pid=parent_cert.id if parent_cert else None
         )
-
-        if parent_cert:
-            c.pid = parent_cert.id
-
         c.save()
 
-        flash(f"Create successful")
+        flash(f"Certificate create successful")
 
         return redirect(url_for(".home"))
 
