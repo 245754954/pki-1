@@ -5,8 +5,12 @@
 {% block styles %}
     {{ super() }}
     <style>
-        .revoked td:first-child {
+        .revoked td {
             text-decoration: line-through;
+        }
+
+        .revoked td:last-child {
+            text-decoration: none;
         }
     </style>
 {% endblock %}
@@ -22,6 +26,11 @@
         <a href="{{ url_for(".import_certificate") }}" class="btn btn-default">
             <i class="glyphicon glyphicon-upload"></i>
             Import a certificate
+        </a>
+
+        <a href="{{ url_for(".download_certificate") }}" class="btn btn-default">
+            <i class="glyphicon glyphicon-download"></i>
+            Download a certificate
         </a>
     </p>
 
@@ -75,10 +84,14 @@
                         </a>
                     </td>
                     <td>
-                        {% if item.revoked %}
-                            revoked
+                        {% if item.key %}
+                            {% if item.revoked %}
+                                <span class="label label-danger">revoked</span>
+                            {% else %}
+                                <span class="label label-success">available</span>
+                            {% endif %}
                         {% else %}
-                            available
+                            <span class="label label-warning">external</span>
                         {% endif %}
                     </td>
                 </tr>

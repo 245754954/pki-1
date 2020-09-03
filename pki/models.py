@@ -145,17 +145,23 @@ class Certificate(mongoengine.DynamicDocument):
 
     @property
     def openssh_public_key(self):
-        return self.cert.public_key().public_bytes(
-            format=serialization.PublicFormat.OpenSSH,
-            encoding=serialization.Encoding.OpenSSH
-        ).decode()
+        try:
+            return self.cert.public_key().public_bytes(
+                format=serialization.PublicFormat.OpenSSH,
+                encoding=serialization.Encoding.OpenSSH
+            ).decode()
+        except Exception as e:
+            return "N/A"
 
     @property
     def pem_public_key(self):
-        return self.cert.public_key().public_bytes(
-            format=serialization.PublicFormat.PKCS1,
-            encoding=serialization.Encoding.PEM
-        ).decode()
+        try:
+            return self.cert.public_key().public_bytes(
+                format=serialization.PublicFormat.PKCS1,
+                encoding=serialization.Encoding.PEM
+            ).decode()
+        except Exception as e:
+            return "N/A"
 
     @property
     def is_pair_match(self):

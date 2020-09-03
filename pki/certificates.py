@@ -9,7 +9,7 @@ from ipaddress import IPv4Address
 from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app
 from cryptography.hazmat.primitives import serialization
 
-from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm
+from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm, DownloadCertificateForm
 from pki.models import Certificate
 
 logger = logging.getLogger(__name__)
@@ -374,3 +374,41 @@ def import_certificate():
         return redirect(url_for(".home"))
 
     return render_template("import.html", form=form)
+
+
+@bp.route("/download", methods=["POST", "GET"])
+def download_certificate():
+    import ssl
+    from urllib.parse import urlparse
+    import socket
+
+    form = DownloadCertificateForm()
+
+    if form.validate_on_submit():
+        parsed = urlparse(form.url.data)
+
+        hostname = parsed.hostname
+        port = int(parsed.port) if parsed.port else 443
+
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+
+        sock = context.wrap_socket(conn, server_hostname=hostname)
+
+        sock.connect((hostname, port))
+
+        cert_content = ssl.DER_cert_to_PEM_cert(sock.getpeercert(True))
+
+        x509_cert = x509.load_pem_x509_certificate(cert_content.encode(), backend=default_backend())
+
+        cert = Certificate(
+            cert=x509_cert,
+            serial_number=str(x509_cert.serial_number)
+        )
+
+        cert.save()
+
+        return redirect(url_for(".detail", id=cert.id))
+
+    return render_template("download.html", form=form)

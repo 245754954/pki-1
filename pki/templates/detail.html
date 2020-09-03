@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Detail{% endblock %}
+{% block title %}Detail of {{ item.cn }}{% endblock %}
 
 {% block styles %}
     {{ super() }}
     <style type="text/css">
-        td:nth-child(2){
+        td:nth-child(2) {
             overflow-wrap: anywhere;
         }
     </style>
@@ -15,7 +15,7 @@
 
     <ol class="breadcrumb">
         <li><a href="{{ url_for(".home") }}">Certificates</a></li>
-        <li>Detail</li>
+        <li>{{ item.cn }}</li>
     </ol>
 
     {% if crt.is_ca %}
