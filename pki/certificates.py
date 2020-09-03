@@ -8,7 +8,7 @@ from ipaddress import IPv4Address
 from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app
 from cryptography.hazmat.primitives import serialization
 
-from pki.forms import CreateCertificateForm, ConfirmForm
+from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm
 from pki.models import Certificate
 
 logger = logging.getLogger(__name__)
@@ -329,3 +329,36 @@ def revoke(id):
         return redirect(url_for(".home"))
 
     return render_template("confirm.html", form=form, message="This certificate will be REVOKED.")
+
+
+@bp.route("/import", methods=["POST", "GET"])
+def import_certificate():
+    """
+    :return:
+    """
+    form = ImportCertificateForm()
+
+    if form.validate_on_submit():
+
+        private_key = serialization.load_pem_private_key(
+            form.private_key.data.encode(),
+            password=form.password.data.encode() or None,
+            backend=default_backend())
+
+        x509_cert = x509.load_pem_x509_certificate(form.certificate.data.encode(), backend=default_backend())
+
+        cert = Certificate(
+            key=private_key,
+            cert=x509_cert,
+            serial_number=str(x509_cert.serial_number)
+        )
+
+        if cert.is_pair_match:
+            cert.save()
+            flash("Certificate import success")
+        else:
+            flash("Keypair does not match", "Error")
+
+        return redirect(url_for(".home"))
+
+    return render_template("import.html", form=form)

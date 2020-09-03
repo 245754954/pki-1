@@ -142,3 +142,35 @@ class Certificate(mongoengine.DynamicDocument):
             pkcs.set_ca_certificates(ca_certificates)
 
         return pkcs
+
+    @property
+    def openssh_public_key(self):
+        return self.cert.public_key().public_bytes(
+            format=serialization.PublicFormat.OpenSSH,
+            encoding=serialization.Encoding.OpenSSH
+        ).decode()
+
+    @property
+    def pem_public_key(self):
+        return self.cert.public_key().public_bytes(
+            format=serialization.PublicFormat.PKCS1,
+            encoding=serialization.Encoding.PEM
+        ).decode()
+
+    @property
+    def is_pair_match(self):
+        """
+        validate if certificate and key's public key is the same
+        :return:
+        """
+        try:
+            return self.cert.public_key().public_bytes(
+                format=serialization.PublicFormat.PKCS1,
+                encoding=serialization.Encoding.DER
+            ) == self.key.public_key().public_bytes(
+                format=serialization.PublicFormat.PKCS1,
+                encoding=serialization.Encoding.DER
+            )
+        except Exception as e:
+            logger.error(e)
+            return False

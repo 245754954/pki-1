@@ -19,6 +19,13 @@ class ModeForm(Form):
     is_client_auth = wtforms.BooleanField("Client Auth")
 
 
+class ImportCertificateForm(FlaskForm):
+    certificate = wtforms.TextAreaField("Certificate")
+    private_key = wtforms.TextAreaField("Private Key")
+    password = wtforms.PasswordField("Private Key Password")
+    submit = wtforms.SubmitField("Confirm")
+
+
 class CreateCertificateForm(FlaskForm):
     c = wtforms.StringField(
         "Country [C]", validators=[wtforms.validators.DataRequired()])

@@ -2,6 +2,15 @@
 
 {% block title %}Detail{% endblock %}
 
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+        td:nth-child(2){
+            overflow-wrap: anywhere;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 
     <ol class="breadcrumb">
@@ -137,6 +146,21 @@
                     </td>
                 </tr>
             {% endfor %}
+            <tr>
+                <th colspan="2">Public Key</th>
+            </tr>
+            <tr>
+                <td>OpenSSH</td>
+                <td>
+                    <span>{{ item.openssh_public_key }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>PEM</td>
+                <td>
+                    <pre>{{ item.pem_public_key }}</pre>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
