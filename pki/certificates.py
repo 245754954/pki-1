@@ -54,6 +54,12 @@ def create():
     else:
         form = CreateCertificateForm(
             data={
+                "c": current_app.config.get("DEFAULT_COUNTRY"),
+                "st": current_app.config.get("DEFAULT_STATE"),
+                "l": current_app.config.get("DEFAULT_LOCALITY"),
+                "o": current_app.config.get("DEFAULT_ORGANIZATION"),
+                "ou": current_app.config.get("DEFAULT_UNIT"),
+                "duration": int(current_app.config.get("DEFAULT_DURATION")),
                 "parent": 0,
                 "mode": {
                     "is_ca": True
