@@ -3,6 +3,9 @@ import mongoengine
 import logging
 import binascii
 import OpenSSL
+import hashlib
+import base64
+
 from bson import Binary
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization, hashes
@@ -77,6 +80,18 @@ class Certificate(mongoengine.DynamicDocument):
     @property
     def sha256(self):
         return ":".join(textwrap.wrap(binascii.hexlify(self.cert.fingerprint(hashes.SHA256())).decode(), 2)).upper()
+
+    @property
+    def keyid(self):
+        der_bytes = self.cert.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo)
+        alg = hashlib.sha256()
+        alg.update(der_bytes)
+        digest = alg.digest()[:30]
+        raw_text = base64.b32encode(digest).decode('utf-8').rstrip("=")
+        keyid = ":".join(textwrap.wrap(raw_text, 4))
+        return keyid
 
     @property
     def sn(self):

@@ -43,11 +43,11 @@
                     Subject Name
                 </th>
             </tr>
-            {% for imte in cert.subject %}
+            {% for field in cert.subject %}
                 <tr>
-                    <td style="text-align: right">{{ imte.oid._name }}</td>
+                    <td style="text-align: right">{{ field.oid._name }}</td>
                     <td>
-                        {{ imte.value }}
+                        {{ field.value }}
                     </td>
                 </tr>
             {% endfor %}
@@ -56,11 +56,11 @@
                     Issuer Name
                 </th>
             </tr>
-            {% for imte in cert.issuer %}
+            {% for field in cert.issuer %}
                 <tr>
-                    <td style="text-align: right">{{ imte.oid._name }}</td>
+                    <td style="text-align: right">{{ field.oid._name }}</td>
                     <td>
-                        {{ imte.value }}
+                        {{ field.value }}
                     </td>
                 </tr>
             {% endfor %}
@@ -144,6 +144,15 @@
                 <td>
                     {{ item.sha256 }}
                     <button class="btn btn-default btn-sm" data-clipboard-text="{{ item.sha256 }}">
+                        <i class="glyphicon glyphicon-copy"></i>
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">KeyID</td>
+                <td>
+                    {{ item.keyid }}
+                    <button class="btn btn-default btn-sm" data-clipboard-text="{{ item.keyid }}">
                         <i class="glyphicon glyphicon-copy"></i>
                     </button>
                 </td>
