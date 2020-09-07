@@ -107,6 +107,23 @@ class Certificate(mongoengine.DynamicDocument):
                 return item.value
 
     @property
+    def skid(self):
+        try:
+            item = self.cert.extensions.get_extension_for_oid(x509.ExtensionOID.SUBJECT_KEY_IDENTIFIER)
+            return ":".join(textwrap.wrap(binascii.hexlify(item.value.digest).decode(), 2)).upper()
+        except x509.extensions.ExtensionNotFound as e:
+            return None
+
+    @property
+    def aid(self):
+        try:
+            item = self.cert.extensions.get_extension_for_oid(x509.ExtensionOID.AUTHORITY_KEY_IDENTIFIER)
+            return ":".join(textwrap.wrap(binascii.hexlify(item.value.key_identifier).decode(), 2)).upper()
+        except x509.extensions.ExtensionNotFound as e:
+            return None
+
+
+    @property
     def is_ca(self):
         for item in self.cert.extensions:
             if item.oid == x509.ExtensionOID.BASIC_CONSTRAINTS:

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Certificates{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link href="/static/css/jstree-3.3.10.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div id="jstree_demo_div"></div>
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/jstree-3.3.10.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $.ajax({
+                url: "{{ url_for(".tree") }}",
+                success: function (data) {
+                    $('#jstree_demo_div').jstree({
+                        'core': {
+                            'data': data
+                        }
+                    });
+                }
+            })
+
+        })
+    </script>
+{% endblock %}
+

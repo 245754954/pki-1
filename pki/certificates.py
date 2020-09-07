@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from ipaddress import IPv4Address
-from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app
+from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app, jsonify
 from cryptography.hazmat.primitives import serialization
 
 from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm, DownloadCertificateForm
@@ -25,6 +25,27 @@ def home():
     """
     certificates = Certificate.objects()
     return render_template("index.html", certificates=certificates)
+
+
+@bp.route("/tree")
+def tree_view():
+    return render_template("tree.html")
+
+
+@bp.route("/tree.json")
+def tree():
+    certificates = [
+        {
+            # 'id': str(item.id),
+            'text': item.cn,
+            'id': item.skid or str(item.id),
+            'parent': (item.aid if item.aid != item.skid else "#") if item.aid else "#",
+            'state': {
+                'opened': True
+            }
+        } for item in Certificate.objects()
+    ]
+    return jsonify(certificates)
 
 
 @bp.route("/create", methods=["POST", "GET"])
