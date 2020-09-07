@@ -187,3 +187,9 @@ class Certificate(mongoengine.DynamicDocument):
         except Exception as e:
             logger.error(e)
             return False
+
+    @property
+    def cert_pem(self):
+        return self.cert.public_bytes(
+            serialization.Encoding.PEM
+        ).decode()

@@ -111,12 +111,14 @@
             </tr>
             <tr>
                 <td style="text-align: right">Download</td>
-                <td>
-                    <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">key</a>
+                <td id="export">
                     <a href="{{ url_for(".export",id=item.id,format='crt') }}" class="btn btn-default">cert</a>
-                    <a href="{{ url_for(".export",id=item.id,format='crt-chain') }}"
-                       class="btn btn-default">cert(chain)</a>
-                    <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">pkcs12</a>
+                    {% if item.key %}
+                        <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">key</a>
+                        <a href="{{ url_for(".export",id=item.id,format='crt-chain') }}"
+                           class="btn btn-default">cert(chain)</a>
+                        <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">pkcs12</a>
+                    {% endif %}
                 </td>
             </tr>
             <tr>
@@ -128,12 +130,18 @@
                 <td style="text-align: right">SHA-1</td>
                 <td>
                     {{ item.sha1 }}
+                    <button class="btn btn-default btn-sm" data-clipboard-text="{{ item.sha1 }}">
+                        <i class="glyphicon glyphicon-copy"></i>
+                    </button>
                 </td>
             </tr>
             <tr>
                 <td style="text-align: right">SHA-256</td>
                 <td>
                     {{ item.sha256 }}
+                    <button class="btn btn-default btn-sm" data-clipboard-text="{{ item.sha256 }}">
+                        <i class="glyphicon glyphicon-copy"></i>
+                    </button>
                 </td>
             </tr>
             <tr>
@@ -149,21 +157,6 @@
                     </td>
                 </tr>
             {% endfor %}
-            <tr>
-                <th colspan="2">Public Key</th>
-            </tr>
-            <tr>
-                <td>OpenSSH</td>
-                <td>
-                    <span>{{ item.openssh_public_key }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>PEM</td>
-                <td>
-                    <pre>{{ item.pem_public_key }}</pre>
-                </td>
-            </tr>
             </tbody>
         </table>
     </div>
@@ -172,4 +165,19 @@
 
 {% block scripts %}
     {{ super() }}
+    <script src="/static/js/clipboard-2.0.6.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var clipboard = new ClipboardJS('.btn');
+
+            var show_hex = true
+            $("#toggle_hex").click(function () {
+                show_hex = !show_hex
+                var $hex_text = $(this).prev("span")
+                $hex_text.text(
+                    show_hex ? $hex_text.data('hex') : $hex_text.data('dec')
+                )
+            })
+        })
+    </script>
 {% endblock %}
