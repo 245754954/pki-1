@@ -79,6 +79,13 @@ class Certificate(mongoengine.DynamicDocument):
         return ":".join(textwrap.wrap(binascii.hexlify(self.cert.fingerprint(hashes.SHA256())).decode(), 2)).upper()
 
     @property
+    def sn(self):
+        hex_str = "%x" % self.cert.serial_number
+        if len(hex_str) % 2:
+            hex_str = "0" + hex_str
+        return ":".join(textwrap.wrap(hex_str, 2)).upper()
+
+    @property
     def cn(self):
         for item in self.cert.subject:
             if item.oid == x509.NameOID.COMMON_NAME:

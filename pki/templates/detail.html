@@ -91,7 +91,10 @@
             <tr>
                 <td style="text-align: right">Serial Number</td>
                 <td>
-                    {{ cert.serial_number }}
+                    <span data-dec="{{ cert.serial_number }}" data-hex="{{ item.sn }}">
+                    {{ item.sn }}
+                    </span>
+                    <button class="btn btn-default" id="toggle_hex">toggle</button>
                 </td>
             </tr>
             <tr>
