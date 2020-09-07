@@ -1,3 +1,9 @@
+# 0.3.0
+
+- [New] download certificate
+- [New] copy to clipboard integration
+- [Fix] serial number hext display
+
 # 0.2.0
 
 - [API] move /certificate/ocsp to ocsp

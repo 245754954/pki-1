@@ -112,11 +112,15 @@
             <tr>
                 <td style="text-align: right">Download</td>
                 <td id="export">
-                    <a href="{{ url_for(".export",id=item.id,format='crt') }}" class="btn btn-default">cert</a>
+                    <div class="btn-group">
+                        <a href="{{ url_for(".export",id=item.id,format='crt') }}" class="btn btn-default">cert</a>
+                    </div>
+
                     {% if item.key %}
-                        <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">key</a>
                         <a href="{{ url_for(".export",id=item.id,format='crt-chain') }}"
                            class="btn btn-default">cert(chain)</a>
+
+                        <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">key</a>
                         <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">pkcs12</a>
                     {% endif %}
                 </td>
