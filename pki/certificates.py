@@ -145,13 +145,7 @@ def create():
         ).add_extension(
             x509.SubjectKeyIdentifier.from_public_key(key.public_key()), critical=False
         ).add_extension(
-            x509.AuthorityKeyIdentifier(
-                # @todo remove internal method
-                x509.extensions._key_identifier_from_public_key(signing_key.public_key()),
-                # @todo issuer
-                None,
-                None
-            ), critical=False
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(signing_key.public_key()), critical=False
         )
 
         # basic constraints
