@@ -222,7 +222,7 @@
                 )
             })
 
-            $("#export a").each(function () {
+            $("#export a:not([href*=pkcs])").each(function () {
                 var $btn = $("<a class='btn btn-default '><i class='glyphicon glyphicon-copy'></i></a>")
                 $(this).wrapAll("<div class='btn-group'>").after($btn)
                 $.ajax({
