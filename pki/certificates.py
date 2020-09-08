@@ -248,6 +248,34 @@ def create():
                 x509.SubjectAlternativeName(san), critical=False
             )
 
+        # certificate policies
+        cert = cert.add_extension(
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [u"http://other.com/cps"],
+                )
+            ]),
+            critical=False
+        )
+
+        # crl distribution points
+        cert = cert.add_extension(
+            x509.CRLDistributionPoints(
+                [
+                    x509.DistributionPoint(
+                        full_name=[
+                            x509.UniformResourceIdentifier("http://127.0.0.1")
+                        ],
+                        relative_name=None,
+                        reasons=None,
+                        crl_issuer=None,
+                    )
+                ]
+            ),
+            critical=False
+        )
+
         # sign
         cert = cert.sign(signing_key, hashes.SHA256(), default_backend())
 
