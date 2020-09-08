@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Scan Certificate{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <ol class="breadcrumb">
+        <li><a href="{{ url_for(".home") }}">Certificates</a></li>
+        <li><a href="{{ url_for(".import_certificate") }}">Import</a></li>
+        <li>Scan</li>
+    </ol>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Scan Website
+        </div>
+        <div class="panel-body">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+{% endblock %}

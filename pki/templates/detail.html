@@ -23,18 +23,19 @@
         <li>{{ item.cn }}</li>
     </ol>
 
-    {% if crt.is_ca %}
-        <p>
+
+    <p>
+        {% if crt.is_ca and crt.key %}
             <a href="{{ url_for(".create",parent=item.id) }}" class="btn btn-default">
                 <i class="glyphicon glyphicon-plus"></i>
                 Create a child Certificate
             </a>
-            <a href="{{ url_for(".delete",id=item.id) }}" class="btn btn-danger">
-                <i class="glyphicon glyphicon-trash"></i>
-                Delete
-            </a>
-        </p>
-    {% endif %}
+        {% endif %}
+        <a href="{{ url_for(".delete",id=item.id) }}" class="btn btn-danger">
+            <i class="glyphicon glyphicon-trash"></i>
+            Delete
+        </a>
+    </p>
 
 
     <div class="panel panel-default">

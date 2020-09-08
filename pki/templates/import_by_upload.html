@@ -2,24 +2,20 @@
 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Detect Certificate{% endblock %}
+{% block title %}Upload Certificate{% endblock %}
 
-{% block styles %}
-    {{ super() }}
-    <style type="text/css">
-    </style>
-{% endblock %}
 
 {% block content %}
 
     <ol class="breadcrumb">
         <li><a href="{{ url_for(".home") }}">Certificates</a></li>
-        <li>Detect</li>
+        <li><a href="{{ url_for(".import_certificate") }}">Import</a></li>
+        <li>Upload</li>
     </ol>
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            Detect Website
+            Certificate Content
         </div>
         <div class="panel-body">
             {{ wtf.quick_form(form) }}

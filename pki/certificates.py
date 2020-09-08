@@ -9,12 +9,29 @@ from ipaddress import IPv4Address
 from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app, jsonify
 from cryptography.hazmat.primitives import serialization
 
-from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm, DetectCertificate
+from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm, ScanCertificateForm, \
+    UploadCertificateForm
 from pki.models import Certificate
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("certificates", __name__)
+
+
+def save_cert_response(x509_cert):
+    exist_cert = Certificate.objects(serial_number=str(x509_cert.serial_number)).first()
+
+    # call x509 compare
+    if exist_cert and exist_cert.cert == x509_cert:
+        flash(f"Certificate {exist_cert.cn} exists")
+        return redirect(url_for(".detail", id=exist_cert.id))
+
+    cert = Certificate(
+        cert=x509_cert,
+        serial_number=str(x509_cert.serial_number)
+    )
+    cert.save()
+    return redirect(url_for(".home"))
 
 
 @bp.route("/")
@@ -367,6 +384,14 @@ def import_certificate():
     """
     :return:
     """
+    return render_template("import.html")
+
+
+@bp.route("/import/text", methods=["POST", "GET"])
+def import_by_text():
+    """
+    :return:
+    """
     form = ImportCertificateForm()
 
     if form.validate_on_submit():
@@ -392,16 +417,50 @@ def import_certificate():
 
         return redirect(url_for(".home"))
 
-    return render_template("import.html", form=form)
+    return render_template("import_by_text.html", form=form)
 
 
-@bp.route("/detect", methods=["POST", "GET"])
-def detect_certificate():
+@bp.route("/import/upload", methods=["POST", "GET"])
+def import_by_upload():
+    """
+    :return:
+    """
+    form = UploadCertificateForm()
+
+    if form.validate_on_submit():
+        upload_content = request.files['certificate'].read()
+
+        x509_cert = None
+
+        try:
+            x509_cert = x509.load_pem_x509_certificate(upload_content, backend=default_backend())
+        except Exception as e:
+            print(e)
+
+        try:
+            x509_cert = x509.load_der_x509_certificate(upload_content, backend=default_backend())
+        except Exception as e:
+            print(e)
+
+        if not x509_cert:
+            flash("Upload error", "error")
+            return redirect(url_for(".import_by_upload"))
+
+        return save_cert_response(x509_cert)
+
+    return render_template("import_by_upload.html", form=form)
+
+
+@bp.route("/import/scan", methods=["POST", "GET"])
+def import_by_scan():
+    """
+    :return:
+    """
     import ssl
     from urllib.parse import urlparse
     import socket
 
-    form = DetectCertificate()
+    form = ScanCertificateForm()
 
     if form.validate_on_submit():
         parsed = urlparse(form.url.data)
@@ -419,20 +478,6 @@ def detect_certificate():
 
         x509_cert = x509.load_der_x509_certificate(sock.getpeercert(True), backend=default_backend())
 
-        exist_cert = Certificate.objects(serial_number=str(x509_cert.serial_number)).first()
+        return save_cert_response(x509_cert)
 
-        # call x509 compare
-        if exist_cert and exist_cert.cert == x509_cert:
-            flash(f"Certificate {exist_cert.cn} exists")
-            return redirect(url_for(".detail", id=exist_cert.id))
-
-        cert = Certificate(
-            cert=x509_cert,
-            serial_number=str(x509_cert.serial_number)
-        )
-        cert.save()
-        flash(f"Certificate imported")
-
-        return redirect(url_for(".detail", id=cert.id))
-
-    return render_template("detect.html", form=form)
+    return render_template("import_by_scan.html", form=form)
