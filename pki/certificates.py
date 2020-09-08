@@ -9,7 +9,7 @@ from ipaddress import IPv4Address
 from flask import render_template, redirect, url_for, flash, request, Blueprint, make_response, current_app, jsonify
 from cryptography.hazmat.primitives import serialization
 
-from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm, DownloadCertificateForm
+from pki.forms import CreateCertificateForm, ConfirmForm, ImportCertificateForm, DetectCertificate
 from pki.models import Certificate
 
 logger = logging.getLogger(__name__)
@@ -395,13 +395,13 @@ def import_certificate():
     return render_template("import.html", form=form)
 
 
-@bp.route("/download", methods=["POST", "GET"])
-def download_certificate():
+@bp.route("/detect", methods=["POST", "GET"])
+def detect_certificate():
     import ssl
     from urllib.parse import urlparse
     import socket
 
-    form = DownloadCertificateForm()
+    form = DetectCertificate()
 
     if form.validate_on_submit():
         parsed = urlparse(form.url.data)
@@ -435,4 +435,4 @@ def download_certificate():
 
         return redirect(url_for(".detail", id=cert.id))
 
-    return render_template("download.html", form=form)
+    return render_template("detect.html", form=form)

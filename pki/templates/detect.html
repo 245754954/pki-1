@@ -2,7 +2,7 @@
 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Download Certificate{% endblock %}
+{% block title %}Detect Certificate{% endblock %}
 
 {% block styles %}
     {{ super() }}
@@ -14,12 +14,12 @@
 
     <ol class="breadcrumb">
         <li><a href="{{ url_for(".home") }}">Certificates</a></li>
-        <li>Download</li>
+        <li>Detect</li>
     </ol>
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            Download Certificate
+            Detect Website
         </div>
         <div class="panel-body">
             {{ wtf.quick_form(form) }}

@@ -31,9 +31,9 @@ class ImportCertificateForm(FlaskForm):
     submit = wtforms.SubmitField("Import")
 
 
-class DownloadCertificateForm(FlaskForm):
+class DetectCertificate(FlaskForm):
     url = wtforms.StringField("URL", default="https://www.apple.com")
-    submit = wtforms.SubmitField("Download")
+    submit = wtforms.SubmitField("Detect")
 
 
 class CreateCertificateForm(FlaskForm):
