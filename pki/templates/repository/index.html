@@ -1,0 +1,33 @@
+{% extends "repository/base.html" %}
+
+{% block title %}Repository{% endblock %}
+
+{% block content %}
+    <h1>Root CAs</h1>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Common Name</th>
+            <th>Serial Number</th>
+            <th>Download</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in certificates %}
+            <tr>
+                <td>{{ item.cn }}</td>
+                <td>{{ item.sn }}</td>
+                <td>
+                    <a href="{{ url_for(".download",id=item.id,format="pem") }}">
+                        PEM
+                    </a>
+                    |
+                    <a href="{{ url_for(".download",id=item.id,format="der") }}">
+                        DER
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

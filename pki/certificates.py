@@ -96,8 +96,9 @@ def create():
                     "is_client_auth": True,
                 },
                 "aia": {
-                    "enabled": False,
-                    'ca_issuers': current_app.config.get("DEFAULT_CA_ISSUER_URL"),
+                    "enabled": True,
+                    'ca_issuers': current_app.config.get("DEFAULT_CA_ISSUER_URL") +
+                                  url_for("repository.download", id=parent_id),
                     'ocsp': current_app.config.get("DEFAULT_OCSP_URL")
                 }
             }

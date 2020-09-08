@@ -1,0 +1,12 @@
+{% extends "bootstrap/base.html" %}
+
+{% import "bootstrap/utils.html" as utils %}
+
+{% block title %}Repository{% endblock %}
+
+{% block body %}
+    <div class="container">
+        {{ utils.flashed_messages(dismissible=true) }}
+        {{ super() }}
+    </div>
+{% endblock %}

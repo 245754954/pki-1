@@ -14,8 +14,8 @@ def create_app():
         TOTP_BASE=os.environ.get("TOTP_BASE") or "dogbird",
 
         DEFAULT_DURATION=os.environ.get("DEFAULT_DURATION") or "365",
-        DEFAULT_OCSP_URL=os.environ.get("DEFAULT_OCSP_URL") or "http://ocsp.example.com",
-        DEFAULT_CA_ISSUER_URL=os.environ.get("DEFAULT_CA_ISSUER_URL") or "https://pki.example.com"
+        DEFAULT_OCSP_URL=os.environ.get("DEFAULT_OCSP_URL") or "http://127.0.0.1:5000",
+        DEFAULT_CA_ISSUER_URL=os.environ.get("DEFAULT_CA_ISSUER_URL") or "http://127.0.0.1:5000"
     )
 
     connect("pki", host=app.config.get("MONGODB_URL"))
@@ -27,6 +27,9 @@ def create_app():
 
     from pki import certificates
     app.register_blueprint(certificates.bp, url_prefix="/certificates")
+
+    from pki import repository
+    app.register_blueprint(repository.bp, url_prefix="/repository")
 
     from pki import ocsp
     app.register_blueprint(ocsp.bp, url_prefix="/ocsp")
