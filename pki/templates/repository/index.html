@@ -3,20 +3,27 @@
 {% block title %}Repository{% endblock %}
 
 {% block content %}
-    <h1>Root CAs</h1>
+    <h1>PKI Repository</h1>
+
+    <h6>Root CA</h6>
     <table class="table table-bordered">
         <thead>
         <tr>
             <th>Common Name</th>
-            <th>Serial Number</th>
+            <th>Fingerprint(SHA1)</th>
+            <th>Valid Until</th>
+            <th>Type</th>
             <th>Download</th>
+            <th>CRL</th>
         </tr>
         </thead>
         <tbody>
         {% for item in certificates %}
             <tr>
                 <td>{{ item.cn }}</td>
-                <td>{{ item.sn }}</td>
+                <td>{{ item.sha1 }}</td>
+                <td>{{ item.cert.not_valid_after }}</td>
+                <td>{{ "Root" if item.skid == item.akid else "Intermediate" }}</td>
                 <td>
                     <a href="{{ url_for(".download",id=item.id,format="pem") }}">
                         PEM
@@ -24,6 +31,11 @@
                     |
                     <a href="{{ url_for(".download",id=item.id,format="der") }}">
                         DER
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for(".download",id=item.id,format="crl") }}">
+                        crl
                     </a>
                 </td>
             </tr>

@@ -301,6 +301,8 @@ def delete(id):
 def export(id, format):
     """
     Export
+
+    @todo fix this API's single responsibility problem
     :return:
     """
     cert = Certificate.objects(id=id).get()
@@ -353,8 +355,15 @@ def export(id, format):
     elif format == "pkcs12":
         # openssl pkcs12 -nodes -in me.p12
         response = make_response(cert.pkcs12.export(passphrase=cert.pkcs12_password))
-        response.headers['Content-Type'] = 'application/pkcs12'
+        response.headers['Content-Type'] = 'application/x-pkcs12'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.p12'
+    elif format == "crl":
+        # openssl crl -in certificate.crl --text -noout
+        response = make_response(cert.crl.public_bytes(
+            serialization.Encoding.PEM
+        ))
+        response.headers['Content-Type'] = 'application/pkix-crl'
+        response.headers['Content-Disposition'] = f'attachment; filename={sn}.crl'
     return response
 
 

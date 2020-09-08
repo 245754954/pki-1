@@ -42,14 +42,22 @@ def download(id):
         response = make_response(cert.cert.public_bytes(
             serialization.Encoding.PEM
         ))
+        response.headers['Content-Type'] = 'application/x-x509-ca-cert'
+        response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crt'
     elif file_format == "der":
         response = make_response(cert.cert.public_bytes(
             serialization.Encoding.DER
         ))
+        response.headers['Content-Type'] = 'application/x-x509-ca-cert'
+        response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crt'
+    elif file_format == "crl":
+        # openssl crl -in certificate.crl --text -noout
+        response = make_response(cert.crl.public_bytes(
+            serialization.Encoding.PEM
+        ))
+        response.headers['Content-Type'] = 'application/pkix-crl'
+        response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crl'
     else:
         abort(404)
-
-    response.headers['Content-Type'] = 'application/x-x509-ca-cert'
-    response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crt'
 
     return response

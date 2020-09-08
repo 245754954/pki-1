@@ -136,6 +136,12 @@
                             <i class="glyphicon glyphicon-save"></i>
                             Key
                         </a>
+
+                        <a href="{{ url_for(".export",id=item.id,format='crl') }}" class="btn btn-default">
+                            <i class="glyphicon glyphicon-save"></i>
+                            CRL
+                        </a>
+
                         <div class="btn-group">
                             <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">
                                 <i class="glyphicon glyphicon-save"></i>

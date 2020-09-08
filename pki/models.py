@@ -8,7 +8,8 @@ import pyotp
 
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization, hashes
-from datetime import datetime
+from datetime import datetime, timedelta
+from cryptography.hazmat.backends import default_backend
 
 from .fields import PrivateKeyField, CertField
 
@@ -185,3 +186,38 @@ class Certificate(mongoengine.DynamicDocument):
         except Exception as e:
             logger.error(e)
             return False
+
+    @property
+    def crl(self):
+        builder = (
+            x509.CertificateRevocationListBuilder().issuer_name(
+                self.cert.subject
+            ).last_update(
+                datetime.today()
+            ).next_update(
+                datetime.today() + timedelta(days=1)
+            )
+        )
+
+        backend = default_backend()
+
+        for item in Certificate.objects(revoked=True, pid=self.id):
+            print(f"adding {item.cert.serial_number}")
+            revoked_cert = (
+                x509.RevokedCertificateBuilder().serial_number(
+                    item.cert.serial_number
+                ).revocation_date(
+                    datetime.today()
+                ).build(backend)
+            )
+            builder = builder.add_revoked_certificate(revoked_cert)
+
+        crl = builder.sign(
+            private_key=self.key,
+            algorithm=hashes.SHA256(),
+            backend=backend,
+        )
+
+        print(f"crl len={len(crl)}")
+
+        return crl
