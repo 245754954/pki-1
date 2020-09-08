@@ -26,7 +26,7 @@ class ImportCertificateForm(FlaskForm):
     certificate = wtforms.TextAreaField(
         "Certificate", description="PEM Format", validators=[wtforms.validators.DataRequired()])
     private_key = wtforms.TextAreaField(
-        "Private Key", description="PEM Format", validators=[wtforms.validators.DataRequired()])
+        "Private Key", description="PEM Format")
     password = wtforms.PasswordField("Private Key Password", description="Keep empty if no password")
     submit = wtforms.SubmitField("Import")
 

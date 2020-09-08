@@ -362,24 +362,24 @@ def import_certificate():
 
     if form.validate_on_submit():
 
-        private_key = serialization.load_pem_private_key(
-            form.private_key.data.encode(),
-            password=form.password.data.encode() or None,
-            backend=default_backend())
-
         x509_cert = x509.load_pem_x509_certificate(form.certificate.data.encode(), backend=default_backend())
 
         cert = Certificate(
-            key=private_key,
             cert=x509_cert,
             serial_number=str(x509_cert.serial_number)
         )
 
-        if cert.is_pair_match:
-            cert.save()
-            flash("Certificate import success")
-        else:
-            flash("Keypair does not match", "Error")
+        if form.private_key.data:
+            cert.key = serialization.load_pem_private_key(
+                form.private_key.data.encode(),
+                password=form.password.data.encode() or None,
+                backend=default_backend())
+
+            if not cert.is_pair_match:
+                flash("Keypair does not match", "Error")
+                return redirect(url_for(".home"))
+
+        cert.save()
 
         return redirect(url_for(".home"))
 
