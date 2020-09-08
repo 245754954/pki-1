@@ -19,10 +19,6 @@ bp = Blueprint("certificates", __name__)
 
 @bp.route("/")
 def home():
-    """
-    List
-    :return:
-    """
     certificates = Certificate.objects()
     return render_template("index.html", certificates=certificates)
 
@@ -36,10 +32,9 @@ def tree_view():
 def tree():
     certificates = [
         {
-            # 'id': str(item.id),
             'text': item.cn,
             'id': item.skid or str(item.id),
-            'parent': (item.aid if item.aid != item.skid else "#") if item.aid else "#",
+            'parent': (item.akid if item.akid != item.skid else "#") if item.akid else "#",
             'state': {
                 'opened': True
             }
