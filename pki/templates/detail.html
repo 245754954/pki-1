@@ -119,26 +119,30 @@
                 <td id="export">
                     <a href="{{ url_for(".export",id=item.id,format='crt') }}" class="btn btn-default">
                         <i class="glyphicon glyphicon-save"></i>
-                        cert
+                        PEM
+                    </a>
+                    <a href="{{ url_for(".export",id=item.id,format='der') }}" class="btn btn-default">
+                        <i class="glyphicon glyphicon-save"></i>
+                        DER
                     </a>
 
                     {% if item.key %}
                         <a href="{{ url_for(".export",id=item.id,format='crt-chain') }}" class="btn btn-default">
                             <i class="glyphicon glyphicon-save"></i>
-                            cert(chain)
+                            PEM Chain
                         </a>
                         <a href="{{ url_for(".export",id=item.id,format='key') }}" class="btn btn-default">
                             <i class="glyphicon glyphicon-save"></i>
-                            key
+                            Key
                         </a>
                         <div class="btn-group">
                             <a href="{{ url_for(".export",id=item.id,format='pkcs12') }}" class="btn btn-default">
                                 <i class="glyphicon glyphicon-save"></i>
-                                pkcs12
+                                PKCS12
                             </a>
                             <a class="btn btn-default" data-clipboard-text="{{ item.pkcs12_password }}">
-                                <i class="glyphicon glyphicon-copy"></i>
-                                Phrase:{{ item.pkcs12_password }}
+                                <i class="glyphicon glyphicon-lock"></i>
+                                {{ item.pkcs12_password }}
                             </a>
                         </div>
                     {% endif %}
@@ -182,6 +186,16 @@
                 <td>
                     {{ item.skid }}
                     <button class="btn btn-default btn-sm" data-clipboard-text="{{ item.skid }}">
+                        <i class="glyphicon glyphicon-copy"></i>
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align: right">AKID</td>
+                <td>
+                    {{ item.akid }}
+                    <button class="btn btn-default btn-sm" data-clipboard-text="{{ item.akid }}">
                         <i class="glyphicon glyphicon-copy"></i>
                     </button>
                 </td>

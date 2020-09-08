@@ -297,9 +297,18 @@ def export(id, format):
     # application/pkcs12                  .pfx .p12
 
     if format == "crt":
+        #
         # openssl x509 -text -noout -in certificate.crt
         response = make_response(cert.cert.public_bytes(
             serialization.Encoding.PEM
+        ))
+        response.headers['Content-Type'] = 'application/x-x509-ca-cert'
+        response.headers['Content-Disposition'] = f'attachment; filename={sn}.crt'
+    elif format == "der":
+        #
+        # openssl x509 --text -inform DER -noout -in certificate.crt
+        response = make_response(cert.cert.public_bytes(
+            serialization.Encoding.DER
         ))
         response.headers['Content-Type'] = 'application/x-x509-ca-cert'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.crt'
@@ -408,16 +417,21 @@ def download_certificate():
 
         sock.connect((hostname, port))
 
-        cert_content = ssl.DER_cert_to_PEM_cert(sock.getpeercert(True))
+        x509_cert = x509.load_der_x509_certificate(sock.getpeercert(True), backend=default_backend())
 
-        x509_cert = x509.load_pem_x509_certificate(cert_content.encode(), backend=default_backend())
+        exist_cert = Certificate.objects(serial_number=str(x509_cert.serial_number)).first()
+
+        # call x509 compare
+        if exist_cert and exist_cert.cert == x509_cert:
+            flash(f"Certificate {exist_cert.cn} exists")
+            return redirect(url_for(".detail", id=exist_cert.id))
 
         cert = Certificate(
             cert=x509_cert,
             serial_number=str(x509_cert.serial_number)
         )
-
         cert.save()
+        flash(f"Certificate imported")
 
         return redirect(url_for(".detail", id=cert.id))
 
