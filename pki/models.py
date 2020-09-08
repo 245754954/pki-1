@@ -4,6 +4,8 @@ import logging
 import binascii
 import OpenSSL
 import base64
+import pyotp
+
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization, hashes
 from datetime import datetime
@@ -118,6 +120,12 @@ class Certificate(mongoengine.DynamicDocument):
         for item in self.cert.extensions:
             if item.oid == x509.ExtensionOID.EXTENDED_KEY_USAGE:
                 return x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH in item.value
+
+    @property
+    def pkcs12_password(self):
+        from flask import current_app
+        tp = pyotp.TOTP(current_app.config.get('TOTP_BASE'))
+        return tp.generate_otp(tp.timecode(self.cert.not_valid_after))
 
     @property
     def pkcs12(self):

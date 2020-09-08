@@ -11,6 +11,7 @@ def create_app():
         BOOTSTRAP_SERVE_LOCAL=True,
         SECRET_KEY=os.environ.get("SECRET_KEY") or "catfish",
         MONGODB_URL=os.environ.get("MONGODB_URL") or "mongodb://localhost:27017",
+        TOTP_BASE=os.environ.get("TOTP_BASE") or "dogbird",
 
         DEFAULT_DURATION=os.environ.get("DEFAULT_DURATION") or "365",
         DEFAULT_OCSP_URL=os.environ.get("DEFAULT_OCSP_URL") or "http://ocsp.example.com",

@@ -325,7 +325,7 @@ def export(id, format):
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.key'
     elif format == "pkcs12":
         # openssl pkcs12 -nodes -in me.p12
-        response = make_response(cert.pkcs12.export())
+        response = make_response(cert.pkcs12.export(passphrase=cert.pkcs12_password))
         response.headers['Content-Type'] = 'application/pkcs12'
         response.headers['Content-Disposition'] = f'attachment; filename={sn}.p12'
     return response
