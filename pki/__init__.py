@@ -1,7 +1,17 @@
 import os
+import logging
+import logging.config
+
 from flask import Flask, redirect
 from flask_bootstrap import Bootstrap
 from mongoengine import connect
+from flask import request, abort
+
+# setup logging
+logging.root.setLevel(logging.DEBUG)
+logging.config.fileConfig(os.path.abspath(os.path.join(os.path.dirname(__file__), 'logging.conf')))
+
+logger = logging.getLogger(__name__)
 
 
 def create_app():
