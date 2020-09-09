@@ -24,7 +24,7 @@ class ModeForm(Form):
 
 class PolicyForm(Form):
     oid = wtforms.StringField("OID")
-    url = wtforms.StringField("URL", validators=[wtforms.validators.URL()])
+    url = wtforms.StringField("URL")
 
 
 class CRLDistributionPointsForm(Form):

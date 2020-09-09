@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Session{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link href="/static/css/animate-4.1.0.min.css" rel="stylesheet">
+    <style type="text/css">
+        td:nth-child(1) {
+            width: 15em;
+        }
+
+        td:nth-child(2) {
+            overflow-wrap: anywhere;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <h3>Here is all SSL Headers</h3>
+    <table class="table table-bordered">
+        {% for (key,value) in request.headers if key.startswith('X') %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Other Headers</h3>
+    <table class="table table-bordered">
+        {% for (key,value) in request.headers if not key.startswith('X') %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+
+

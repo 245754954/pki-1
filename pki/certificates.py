@@ -45,6 +45,11 @@ def tree_view():
     return render_template("tree.html")
 
 
+@bp.route("/session")
+def session():
+    return render_template("session.html")
+
+
 @bp.route("/tree.json")
 def tree():
     certificates = [

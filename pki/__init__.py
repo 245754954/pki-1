@@ -1,13 +1,9 @@
 import os
-import logging
 import logging.config
-
 from flask import Flask, redirect
 from flask_bootstrap import Bootstrap
 from mongoengine import connect
-from flask import request, abort
 
-# setup logging
 logging.root.setLevel(logging.DEBUG)
 logging.config.fileConfig(os.path.abspath(os.path.join(os.path.dirname(__file__), 'logging.conf')))
 
@@ -22,6 +18,7 @@ def create_app():
         SECRET_KEY=os.environ.get("SECRET_KEY") or "catfish",
         MONGODB_URL=os.environ.get("MONGODB_URL") or "mongodb://localhost:27017",
         TOTP_BASE=os.environ.get("TOTP_BASE") or "dogbird",
+        WEBAUTH_HEADER=os.environ.get('WEBAUTH_HEADER'),
 
         DEFAULT_DURATION=os.environ.get("DEFAULT_DURATION") or "365",
         DEFAULT_OCSP_URL=os.environ.get("DEFAULT_OCSP_URL") or "http://127.0.0.1:5000",
@@ -39,6 +36,11 @@ def create_app():
         return redirect("/certificates")
 
     from pki import certificates
+    from pki.auth import check_permission
+
+    if app.config.get("WEBAUTH_HEADER"):
+        logger.info(f"auth is enabled with {app.config.get('WEBAUTH_HEADER')} header")
+        certificates.bp.before_request(check_permission)
     app.register_blueprint(certificates.bp, url_prefix="/certificates")
 
     from pki import repository

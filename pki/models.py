@@ -202,7 +202,6 @@ class Certificate(mongoengine.DynamicDocument):
         backend = default_backend()
 
         for item in Certificate.objects(revoked=True, pid=self.id):
-            print(f"adding {item.cert.serial_number}")
             revoked_cert = (
                 x509.RevokedCertificateBuilder().serial_number(
                     item.cert.serial_number
@@ -217,7 +216,5 @@ class Certificate(mongoengine.DynamicDocument):
             algorithm=hashes.SHA256(),
             backend=backend,
         )
-
-        print(f"crl len={len(crl)}")
 
         return crl
