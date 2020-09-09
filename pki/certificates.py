@@ -95,10 +95,18 @@ def create():
                     "is_server_auth": True,
                     "is_client_auth": True,
                 },
+                "policy": {
+                    "oid": current_app.config.get('DEFAULT_POLICY_OID'),
+                    "url": current_app.config.get('DEFAULT_POLICY_URL'),
+                },
+                "crl": {
+                    "url": current_app.config.get("DEFAULT_CA_ISSUER_URL") +
+                           url_for("repository.download", id=parent_cert.id, file_format="crl"),
+                },
                 "aia": {
                     "enabled": True,
                     'ca_issuers': current_app.config.get("DEFAULT_CA_ISSUER_URL") +
-                                  url_for("repository.download", id=parent_id),
+                                  url_for("repository.download", id=parent_id, file_format="crt"),
                     'ocsp': current_app.config.get("DEFAULT_OCSP_URL")
                 }
             }
@@ -112,6 +120,10 @@ def create():
                 "parent": 0,
                 "mode": {
                     "is_ca": True,
+                },
+                "policy": {
+                    "oid": current_app.config.get('DEFAULT_POLICY_OID'),
+                    "url": current_app.config.get('DEFAULT_POLICY_URL'),
                 },
                 "aia": {
                     "enabled": False,
@@ -249,32 +261,34 @@ def create():
             )
 
         # certificate policies
-        cert = cert.add_extension(
-            x509.CertificatePolicies([
-                x509.PolicyInformation(
-                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
-                    [u"http://other.com/cps"],
-                )
-            ]),
-            critical=False
-        )
+        if form.policy.data.get('url') and form.policy.data.get('oid'):
+            cert = cert.add_extension(
+                x509.CertificatePolicies([
+                    x509.PolicyInformation(
+                        x509.ObjectIdentifier(form.policy.data.get('oid')),
+                        [form.policy.data.get('url')],
+                    )
+                ]),
+                critical=False
+            )
 
         # crl distribution points
-        cert = cert.add_extension(
-            x509.CRLDistributionPoints(
-                [
-                    x509.DistributionPoint(
-                        full_name=[
-                            x509.UniformResourceIdentifier("http://127.0.0.1")
-                        ],
-                        relative_name=None,
-                        reasons=None,
-                        crl_issuer=None,
-                    )
-                ]
-            ),
-            critical=False
-        )
+        if form.crl.data.get('url'):
+            cert = cert.add_extension(
+                x509.CRLDistributionPoints(
+                    [
+                        x509.DistributionPoint(
+                            full_name=[
+                                x509.UniformResourceIdentifier(form.crl.data.get('url'))
+                            ],
+                            relative_name=None,
+                            reasons=None,
+                            crl_issuer=None,
+                        )
+                    ]
+                ),
+                critical=False
+            )
 
         # sign
         cert = cert.sign(signing_key, hashes.SHA256(), default_backend())

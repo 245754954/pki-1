@@ -25,16 +25,16 @@
                 <td>{{ item.cert.not_valid_after }}</td>
                 <td>{{ "Root" if item.skid == item.akid else "Intermediate" }}</td>
                 <td>
-                    <a href="{{ url_for(".download",id=item.id,format="pem") }}">
+                    <a href="{{ url_for(".download",id=item.id,file_format="crt") }}">
                         PEM
                     </a>
                     |
-                    <a href="{{ url_for(".download",id=item.id,format="der") }}">
+                    <a href="{{ url_for(".download",id=item.id,file_format="der") }}">
                         DER
                     </a>
                 </td>
                 <td>
-                    <a href="{{ url_for(".download",id=item.id,format="crl") }}">
+                    <a href="{{ url_for(".download",id=item.id,file_format="crl") }}">
                         crl
                     </a>
                 </td>

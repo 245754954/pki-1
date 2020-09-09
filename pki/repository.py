@@ -21,8 +21,8 @@ def home():
     return render_template("repository/index.html", certificates=certificates)
 
 
-@bp.route("/<id>")
-def download(id):
+@bp.route("/<id>.<file_format>")
+def download(id, file_format):
     """
     download ca certificate
     :param id:
@@ -30,33 +30,31 @@ def download(id):
     """
     cert = Certificate.objects(id=id).get()
 
-    file_format = request.args.get("format", 'pem')
-
     # only ca can be downloaded
     if not cert.is_ca:
         abort(404)
 
     response = make_response("")
 
-    if file_format == "pem":
+    if file_format == "crt":
         response = make_response(cert.cert.public_bytes(
             serialization.Encoding.PEM
         ))
         response.headers['Content-Type'] = 'application/x-x509-ca-cert'
-        response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crt'
+        response.headers['Content-Disposition'] = f'attachment; filename={id}.crt'
     elif file_format == "der":
         response = make_response(cert.cert.public_bytes(
             serialization.Encoding.DER
         ))
         response.headers['Content-Type'] = 'application/x-x509-ca-cert'
-        response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crt'
+        response.headers['Content-Disposition'] = f'attachment; filename={id}.der'
     elif file_format == "crl":
         # openssl crl -in certificate.crl --text -noout
         response = make_response(cert.crl.public_bytes(
             serialization.Encoding.PEM
         ))
         response.headers['Content-Type'] = 'application/pkix-crl'
-        response.headers['Content-Disposition'] = f'attachment; filename={cert.cert.serial_number}.crl'
+        response.headers['Content-Disposition'] = f'attachment; filename={id}.crl'
     else:
         abort(404)
 

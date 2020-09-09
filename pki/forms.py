@@ -22,6 +22,15 @@ class ModeForm(Form):
     is_client_auth = wtforms.BooleanField("Client Auth")
 
 
+class PolicyForm(Form):
+    oid = wtforms.StringField("OID")
+    url = wtforms.StringField("URL", validators=[wtforms.validators.URL()])
+
+
+class CRLDistributionPointsForm(Form):
+    url = wtforms.StringField("URL")
+
+
 class ImportCertificateForm(FlaskForm):
     certificate = wtforms.TextAreaField(
         "Certificate", description="PEM Format", validators=[wtforms.validators.DataRequired()])
@@ -63,6 +72,10 @@ class CreateCertificateForm(FlaskForm):
     parent = wtforms.StringField("Issuer Serial Number [SN]", render_kw={'disabled': ''})
 
     mode = wtforms.FormField(ModeForm, label="Mode")
+
+    policy = wtforms.FormField(PolicyForm, label="Policy")
+
+    crl = wtforms.FormField(CRLDistributionPointsForm, label="Certificate Revocation List")
 
     aia = wtforms.FormField(AuthorityInformationAccessForm, label="Authority Information Access")
 

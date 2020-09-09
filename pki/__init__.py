@@ -15,7 +15,10 @@ def create_app():
 
         DEFAULT_DURATION=os.environ.get("DEFAULT_DURATION") or "365",
         DEFAULT_OCSP_URL=os.environ.get("DEFAULT_OCSP_URL") or "http://127.0.0.1:5000",
-        DEFAULT_CA_ISSUER_URL=os.environ.get("DEFAULT_CA_ISSUER_URL") or "http://127.0.0.1:5000"
+        DEFAULT_CA_ISSUER_URL=os.environ.get("DEFAULT_CA_ISSUER_URL") or "http://127.0.0.1:5000",
+
+        DEFAULT_POLICY_URL=os.environ.get("DEFAULT_POLICY_URL") or "http://127.0.0.1:5000/repository",
+        DEFAULT_POLICY_OID=os.environ.get("DEFAULT_POLICY_OID") or "1.3.6.1.4.1",
     )
 
     connect("pki", host=app.config.get("MONGODB_URL"))
