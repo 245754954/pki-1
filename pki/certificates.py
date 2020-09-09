@@ -157,7 +157,7 @@ def create():
         subject = x509.Name(names)
 
         # issuer and signing key
-        issuer = parent_cert.cert.issuer if parent_cert else subject
+        issuer = parent_cert.cert.subject if parent_cert else subject
         signing_key = parent_cert.key if parent_cert else key
 
         cert = x509.CertificateBuilder().subject_name(
