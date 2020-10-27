@@ -1,6 +1,6 @@
 cffi==1.14.1
 click==7.1.2
-cryptography==3.0
+cryptography==3.2
 dnspython==2.0.0
 dominate==2.5.1
 email-validator==1.1.1
