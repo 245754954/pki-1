@@ -35,18 +35,15 @@ def create_app():
     def home():
         return redirect("/certificates")
 
-    from pki import certificates
+    from pki import certificates, repository, ocsp
     from pki.auth import check_permission
 
     if app.config.get("WEBAUTH_HEADER"):
         logger.info(f"auth is enabled with {app.config.get('WEBAUTH_HEADER')} header")
         certificates.bp.before_request(check_permission)
+
     app.register_blueprint(certificates.bp, url_prefix="/certificates")
-
-    from pki import repository
     app.register_blueprint(repository.bp, url_prefix="/repository")
-
-    from pki import ocsp
     app.register_blueprint(ocsp.bp, url_prefix="/ocsp")
 
     return app

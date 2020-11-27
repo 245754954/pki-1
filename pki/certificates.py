@@ -513,7 +513,7 @@ def import_by_scan():
     """
     :return:
     """
-    import ssl
+    from OpenSSL import SSL
     from urllib.parse import urlparse
     import socket
 
@@ -525,16 +525,21 @@ def import_by_scan():
         hostname = parsed.hostname
         port = int(parsed.port) if parsed.port else 443
 
-        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        context = SSL.Context(SSL.SSLv23_METHOD)
 
-        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        sock = socket.create_connection((hostname, port))
+        sock = SSL.Connection(context, sock)
+        sock.set_connect_state()
+        sock.set_tlsext_host_name(hostname.encode())
 
-        sock = context.wrap_socket(conn, server_hostname=hostname)
+        sock.sendall('HEAD / HTTP/1.0\n\n')
+        sock.recv(16)
 
-        sock.connect((hostname, port))
+        certs = sock.get_peer_cert_chain()
 
-        x509_cert = x509.load_der_x509_certificate(sock.getpeercert(True), backend=default_backend())
-
-        return save_cert_response(x509_cert)
+        for cert in certs:
+            x509_cert = x509.load_pem_x509_certificate(cert.to_cryptography().public_bytes(serialization.Encoding.PEM),
+                                                       backend=default_backend())
+            save_cert_response(x509_cert)
 
     return render_template("import_by_scan.html", form=form)
